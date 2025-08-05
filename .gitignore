@@ -34,3 +34,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# drizzle-kit generated files (if you're storing them)
+lib/db/migrations/
+lib/db/sql/
+lib/db/migrate.ts
+drizzle.config.ts
