@@ -1,5 +1,5 @@
 import { useActionState, useContext } from "react";
-import { SessionContext } from "@/lib/contexts";
+import { SessionContext, type Session } from "@/lib/contexts";
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 
@@ -33,8 +33,8 @@ export function useFormActionState<T, U>(
 }
 
 export function useSession(): {
-  data: any;
-  setData: (data: any) => void;
+  data: Session;
+  setData: (data: Session) => void;
   status: AuthStatus;
   setStatus: React.Dispatch<React.SetStateAction<AuthStatus>>;
 } {

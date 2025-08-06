@@ -1,9 +1,17 @@
 'use client';
 
 import { createContext, use, useEffect, useState } from "react";
-import type { JWTPayload } from "jose";
-
-export type Session = JWTPayload | null | undefined;
+export type Session =
+  | {
+      user: {
+        id: string;
+        username: string;
+        walletAddress: string;
+        chainId: number;
+      };
+    }
+  | null
+  | undefined;
 export type AuthStatus = "authenticated" | "unauthenticated" | "loading";
 
 type SessionContextType = {

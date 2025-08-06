@@ -9,7 +9,8 @@ import { createAppKit } from '@reown/appkit/react';
 import { mainnet } from '@reown/appkit/networks';
 import { wagmiAdapter, config, projectId } from '@/lib/web3/client';
 import { useSession, AuthStatus } from '@/lib/hooks';
-import { nonce, verify } from "@/lib/actions/auth";
+import { nonce } from "@/lib/actions/auth/nonce";
+import { verify } from "@/lib/actions/auth/verify";
 import { createSiweMessage } from 'viem/siwe';
 
 const appKit = createAppKit({

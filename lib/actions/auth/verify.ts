@@ -5,22 +5,60 @@ import { parseSiweMessage, SiweMessage } from "viem/siwe";
 import { cookies } from "next/headers";
 import { publicProcedure, ActionError } from "@/lib/actions/core";
 import { publicClient } from "@/lib/web3/server";
-import { profiles } from "@/lib/db/schema";
+import { profiles, userWallets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { generateDegenerateUsername } from "@/lib/utils";
 import { randomUUID } from "crypto";
-import { SignJWT, type JWTPayload } from "jose";
+import { SignJWT } from "jose";
 
 const NONCE_COOKIE_NAME = "siwe_nonce";
-const SESSION_COOKIE_NAME = "session";
-const JWT_SECRET = process.env.JWT_SECRET!;
+const AUTH_SECRET = process.env.AUTH_SECRET!;
 
-const createSignedSessionToken = async (payload: JWTPayload) => {
-  return await new SignJWT(payload)
+const createSupabaseTokens = async ({
+  id,
+  username,
+  walletAddress,
+  chainId,
+}: {
+  id: string;
+  username: string;
+  walletAddress: string;
+  chainId: number;
+}) => {
+  const key = new TextEncoder().encode(AUTH_SECRET);
+  const basePayload = {
+    aud: "authenticated",
+    sub: id,
+    role: "authenticated",
+    user_metadata: { username },
+    app_metadata: {
+      provider: "walletconnect",
+      providers: ["walletconnect"],
+      walletAddress,
+      chainId,
+    },
+  };
+
+  const accessToken = await new SignJWT({
+    ...basePayload,
+    session_id: randomUUID(),
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("1h")
+    .sign(key);
+
+  const refreshToken = await new SignJWT({
+    ...basePayload,
+    session_id: randomUUID(),
+    type: "refresh_token",
+  })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(new TextEncoder().encode(JWT_SECRET));
+    .sign(key);
+
+  return { accessToken, refreshToken };
 };
 
 export const verify = publicProcedure
@@ -48,58 +86,85 @@ export const verify = publicProcedure
     const walletAddress = siweMessage.address.toLowerCase();
     const chainId = siweMessage.chainId;
 
-    let userProfile = await ctx.db.query.profiles.findFirst({
+    const existingWallet = await ctx.db.query.userWallets.findFirst({
       where: and(
-        eq(profiles.walletAddress, walletAddress),
-        eq(profiles.chainId, chainId)
+        eq(userWallets.walletAddress, walletAddress),
+        eq(userWallets.chainId, chainId)
       ),
     });
 
-    let type: "signin" | "signup" = "signin";
+    let userProfile;
+    let type: "signin" | "signup" | "link" = "signin";
 
-    if (!userProfile) {
-      const [created] = await ctx.db
-        .insert(profiles)
-        .values({
-          id: randomUUID(),
-          walletAddress,
-          chainId,
-          username: generateDegenerateUsername(walletAddress),
-        })
-        .returning();
-
-      if (!created?.id) {
-        throw new ActionError({ message: "Failed to create profile", code: 500 });
+    if (existingWallet) {
+      userProfile = await ctx.db.query.profiles.findFirst({
+        where: eq(profiles.id, existingWallet.userId),
+      });
+      if (!userProfile) {
+        throw new ActionError({ message: "Profile not found", code: 404 });
+      }
+    } else if (ctx.session?.user.id) {
+      // Link new wallet to existing user
+      userProfile = await ctx.db.query.profiles.findFirst({
+        where: eq(profiles.id, ctx.session.user.id),
+      });
+      if (!userProfile) {
+        throw new ActionError({ message: "Profile not found", code: 404 });
+      }
+      await ctx.db.insert(userWallets).values({
+        id: randomUUID(),
+        userId: userProfile.id,
+        walletAddress,
+        chainId,
+      });
+      type = "link";
+    } else {
+      // Create user and profile
+      const id = randomUUID();
+      const username = generateDegenerateUsername(walletAddress);
+      const { error } = await ctx.supabase.serviceRole.auth.admin.createUser({
+        id,
+        user_metadata: { username },
+        app_metadata: { provider: "walletconnect", providers: ["walletconnect"] },
+      });
+      if (error) {
+        throw new ActionError({ message: "Failed to create user", code: 500 });
       }
 
-      userProfile = created;
+      await ctx.db.insert(profiles).values({ id, username });
+      await ctx.db.insert(userWallets).values({
+        id: randomUUID(),
+        userId: id,
+        walletAddress,
+        chainId,
+      });
+      userProfile = { id, username };
       type = "signup";
     }
 
     // Delete nonce
     cookieStore.delete(NONCE_COOKIE_NAME);
 
-    // Create and store JWT session
-    const token = await createSignedSessionToken({
-      id: userProfile.id,
-      walletAddress: userProfile.walletAddress,
-      chainId: userProfile.chainId,
-      username: userProfile.username,
-    });
+    if (type !== "link") {
+      const { accessToken, refreshToken } = await createSupabaseTokens({
+        id: userProfile.id,
+        username: userProfile.username,
+        walletAddress,
+        chainId,
+      });
 
-    cookieStore.set(SESSION_COOKIE_NAME, token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+      await ctx.supabase.anon.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+    }
 
     return {
       type,
       user: {
         id: userProfile.id,
-        walletAddress: userProfile.walletAddress,
-        chainId: userProfile.chainId,
+        walletAddress,
+        chainId,
         username: userProfile.username,
       },
     };

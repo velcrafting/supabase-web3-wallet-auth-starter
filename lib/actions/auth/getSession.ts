@@ -1,19 +1,27 @@
-import { cookies } from "next/headers";
-import { jwtVerify, type JWTPayload } from "jose";
+import { getSession as getSupabaseSession } from "@/lib/supabase";
 
-const SESSION_COOKIE_NAME = "session";
-const JWT_SECRET = process.env.JWT_SECRET!;
+export type Session = {
+  user: {
+    id: string;
+    username: string;
+    walletAddress: string;
+    chainId: number;
+  };
+};
 
-export async function getSession(): Promise<JWTPayload | null> {
-  const cookieStore = cookies(); // ✅ DO NOT await
-  const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
+export async function getSession(): Promise<Session | null> {
+  const session = await getSupabaseSession();
 
-  if (!token) return null;
-
-  try {
-    const { payload } = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
-    return payload;
-  } catch {
+  if (!session) {
     return null;
   }
+
+  return {
+    user: {
+      id: session.user.id,
+      username: session.user.user_metadata.username,
+      walletAddress: session.user.app_metadata.walletAddress,
+      chainId: session.user.app_metadata.chainId,
+    },
+  };
 }

@@ -25,7 +25,7 @@ const DashboardGeneralPage = () => {
           <Input
             id="username"
             name="username"
-            defaultValue={session.user.user_metadata.username}
+            defaultValue={session.user.username}
             className="w-full"
             required
           />
