@@ -123,10 +123,13 @@ export const verify = publicProcedure
       });
       type = "link";
     } else {
-      // Create Supabase user (let it auto-generate the ID)
+   // Create Supabase user (let it auto-generate the ID)
       const username = generateDegenerateUsername(walletAddress);
+      const email = `${walletAddress}@wallet.local`;
       const { data, error } = await ctx.supabase.serviceRole.auth.admin.createUser({
-        user_metadata: { username },
+        email,
+        email_confirm: true,
+        user_metadata: { username, walletAddress, chainId },
         app_metadata: {
           provider: "walletconnect",
           providers: ["walletconnect"],
@@ -139,20 +142,11 @@ export const verify = publicProcedure
 
       const id = data.user.id;
 
-      await ctx.db.transaction(async (tx) => {
-        await tx.insert(profiles).values({
-          id,
-          username,
-          wallet_address: walletAddress,
-          chain_id: chainId,
-        });
-
-        await tx.insert(userWallets).values({
-          id: randomUUID(),
-          userId: id,
-          walletAddress,
-          chainId,
-        });
+      await ctx.db.insert(userWallets).values({
+        id: randomUUID(),
+        userId: id,
+        walletAddress,
+        chainId,
       });
 
       userProfile = { id, username };
