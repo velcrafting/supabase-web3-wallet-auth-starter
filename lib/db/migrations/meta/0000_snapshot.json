@@ -14,6 +14,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "wallet_address": {
           "name": "wallet_address",
           "type": "text",
