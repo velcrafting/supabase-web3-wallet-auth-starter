@@ -23,7 +23,7 @@ const createSupabaseTokens = async ({
   id: string;
   username: string;
   walletAddress: string;
-  chainId: string;
+  chainId: number;
 }) => {
   const key = new TextEncoder().encode(AUTH_SECRET);
   const basePayload = {
@@ -84,7 +84,11 @@ export const verify = publicProcedure
     }
 
     const walletAddress = siweMessage.address.toLowerCase();
-    const chainId = String(siweMessage.chainId);
+    const chainId = Number(siweMessage.chainId);
+
+    if (Number.isNaN(chainId)) {
+      throw new ActionError({ message: "Invalid chainId", code: 400 });
+    }
 
     const existingWallet = await ctx.db.query.userWallets.findFirst({
       where: and(
@@ -119,30 +123,42 @@ export const verify = publicProcedure
       });
       type = "link";
     } else {
-      // Create user and profile
-      const id = randomUUID();
+      // Create Supabase user (let it auto-generate the ID)
       const username = generateDegenerateUsername(walletAddress);
-      const { error } = await ctx.supabase.serviceRole.auth.admin.createUser({
-        id,
+      const { data, error } = await ctx.supabase.serviceRole.auth.admin.createUser({
         user_metadata: { username },
-        app_metadata: { provider: "walletconnect", providers: ["walletconnect"] },
+        app_metadata: {
+          provider: "walletconnect",
+          providers: ["walletconnect"],
+        },
       });
-      if (error) {
+
+      if (error || !data?.user?.id) {
         throw new ActionError({ message: "Failed to create user", code: 500 });
       }
 
-      await ctx.db.insert(profiles).values({ id, username });
-      await ctx.db.insert(userWallets).values({
-        id: randomUUID(),
-        userId: id,
-        walletAddress,
-        chainId,
+      const id = data.user.id;
+
+      await ctx.db.transaction(async (tx) => {
+        await tx.insert(profiles).values({
+          id,
+          username,
+          wallet_address: walletAddress,
+          chain_id: chainId,
+        });
+
+        await tx.insert(userWallets).values({
+          id: randomUUID(),
+          userId: id,
+          walletAddress,
+          chainId,
+        });
       });
+
       userProfile = { id, username };
       type = "signup";
     }
 
-    // Delete nonce
     cookieStore.delete(NONCE_COOKIE_NAME);
 
     if (type !== "link") {

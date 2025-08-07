@@ -31,7 +31,7 @@ export async function getSession(): Promise<Session | null> {
       id: session.user.id,
       username: session.user.user_metadata.username,
       walletAddress: wallet?.walletAddress ?? "",
-      chainId: wallet?.chainId ?? "",
+      chainId: wallet?.chainId?.toString() ?? "",
     },
   };
 }
