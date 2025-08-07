@@ -5,7 +5,9 @@ import { eq } from "drizzle-orm";
 
 import { profiles } from "@/lib/db/schema";
 import { ActionError, protectedProcedure } from "@/lib/actions/core";
+import { createServiceRoleClient } from "@/lib/supabase";
 
+const srClient = createServiceRoleClient();
 export const updateMe = protectedProcedure
   .input(z.object({ username: z.string().min(3) }))
   .action(async ({ ctx, input: { username } }) => {

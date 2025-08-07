@@ -7,89 +7,52 @@ import { publicProcedure, ActionError } from "@/lib/actions/core";
 import { publicClient } from "@/lib/web3/server";
 import { profiles, userWallets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
-import { generateDegenerateUsername } from "@/lib/utils";
 import { randomUUID } from "crypto";
-import { SignJWT } from "jose";
 
 const NONCE_COOKIE_NAME = "siwe_nonce";
-const AUTH_SECRET = process.env.AUTH_SECRET!;
 
-const createSupabaseTokens = async ({
-  id,
-  username,
-  walletAddress,
-  chainId,
-}: {
-  id: string;
-  username: string;
-  walletAddress: string;
-  chainId: number;
-}) => {
-  const key = new TextEncoder().encode(AUTH_SECRET);
-  const basePayload = {
-    aud: "authenticated",
-    sub: id,
-    role: "authenticated",
-    user_metadata: { username },
-    app_metadata: {
-      provider: "walletconnect",
-      providers: ["walletconnect"],
-      walletAddress,
-      chainId,
-    },
-  };
+function usernameFromAddress(addr: string) {
+  return `user_${addr.slice(2, 8)}`;
+}
 
-  const accessToken = await new SignJWT({
-    ...basePayload,
-    session_id: randomUUID(),
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("1h")
-    .sign(key);
-
-  const refreshToken = await new SignJWT({
-    ...basePayload,
-    session_id: randomUUID(),
-    type: "refresh_token",
-  })
-    .setProtectedHeader({ alg: "HS256" })
-    .setIssuedAt()
-    .setExpirationTime("7d")
-    .sign(key);
-
-  return { accessToken, refreshToken };
-};
-
+/**
+ * This action ONLY:
+ * - verifies nonce + signature
+ * - returns existing profile if the wallet is already known (type: "signin")
+ * - when already signed in (ctx.session.user.id), links the wallet (type: "link")
+ *
+ * New account creation + profile upsert + cookie minting
+ * happens in /api/wallets/link.
+ */
 export const verify = publicProcedure
   .input(z.object({ message: z.string(), signature: z.string() }))
   .action(async ({ ctx, input: { message, signature } }) => {
     const cookieStore = await cookies();
 
-    const siweMessage = parseSiweMessage(message) as SiweMessage;
+    const siwe = parseSiweMessage(message) as SiweMessage;
     const expectedNonce = cookieStore.get(NONCE_COOKIE_NAME)?.value;
 
-    if (!expectedNonce || expectedNonce !== siweMessage.nonce) {
+    if (!expectedNonce || expectedNonce !== siwe.nonce) {
       throw new ActionError({ message: "Invalid nonce", code: 400 });
     }
 
-    const valid = await publicClient.verifyMessage({
-      address: siweMessage.address,
+    const ok = await publicClient.verifyMessage({
+      address: siwe.address,
       message,
       signature: signature as `0x${string}`,
     });
 
-    if (!valid) {
+    if (!ok) {
       throw new ActionError({ message: "Invalid signature", code: 401 });
     }
 
-    const walletAddress = siweMessage.address.toLowerCase();
-    const chainId = Number(siweMessage.chainId);
-
-    if (Number.isNaN(chainId)) {
+    const walletAddress = siwe.address.toLowerCase();
+    const chainId = Number(siwe.chainId);
+    if (!Number.isFinite(chainId)) {
       throw new ActionError({ message: "Invalid chainId", code: 400 });
     }
 
+    // 1) Already linked?
     const existingWallet = await ctx.db.query.userWallets.findFirst({
       where: and(
         eq(userWallets.walletAddress, walletAddress),
@@ -97,87 +60,57 @@ export const verify = publicProcedure
       ),
     });
 
-    let userProfile;
-    let type: "signin" | "signup" | "link" = "signin";
-
     if (existingWallet) {
-      userProfile = await ctx.db.query.profiles.findFirst({
+      // Note: your Drizzle schema has `userId`, not `profileId`
+      const prof = await ctx.db.query.profiles.findFirst({
         where: eq(profiles.id, existingWallet.userId),
       });
-      if (!userProfile) {
-        throw new ActionError({ message: "Profile not found", code: 404 });
-      }
-    } else if (ctx.session?.user.id) {
-      // Link new wallet to existing user
-      userProfile = await ctx.db.query.profiles.findFirst({
+      if (!prof) throw new ActionError({ message: "Profile not found", code: 404 });
+
+      cookieStore.delete(NONCE_COOKIE_NAME);
+
+      return {
+        type: "signin" as const,
+        user: {
+          id: prof.id,
+          username: prof.username ?? usernameFromAddress(walletAddress),
+          walletAddress,
+          chainId,
+        },
+      };
+    }
+
+    // 2) Not linked yet; if user is signed in, link this wallet to their profile
+    if (ctx.session?.user.id) {
+      const prof = await ctx.db.query.profiles.findFirst({
         where: eq(profiles.id, ctx.session.user.id),
       });
-      if (!userProfile) {
-        throw new ActionError({ message: "Profile not found", code: 404 });
-      }
+      if (!prof) throw new ActionError({ message: "Profile not found", code: 404 });
+
       await ctx.db.insert(userWallets).values({
         id: randomUUID(),
-        userId: userProfile.id,
+        userId: prof.id, // << matches your schema type
         walletAddress,
         chainId,
       });
-      type = "link";
-    } else {
-      // Create Supabase user (and mirror to local DB)
-      const username = generateDegenerateUsername(walletAddress);
-      const email = `${walletAddress}@wallet.local`;
 
-      const { data, error } = await ctx.supabase.serviceRole.auth.admin.createUser({
-        email,
-        email_confirm: true,
-        user_metadata: { username, walletAddress, chainId },
-        app_metadata: {
-          provider: "walletconnect",
-          providers: ["walletconnect"],
+      cookieStore.delete(NONCE_COOKIE_NAME);
+
+      return {
+        type: "link" as const,
+        user: {
+          id: prof.id,
+          username: prof.username ?? usernameFromAddress(walletAddress),
+          walletAddress,
+          chainId,
         },
-      });
-
-      if (error || !data?.user?.id) {
-        console.error("❌ Supabase user creation error:", error);
-        throw new ActionError({ message: "Failed to create user", code: 500 });
-      }
-
-      const id = data.user.id;
-
-      await ctx.db.insert(userWallets).values({
-        id: randomUUID(),
-        userId: id,
-        walletAddress,
-        chainId,
-      });
-
-      userProfile = { id, username };
-      type = "signup";
+      };
     }
 
+    // 3) Not signed in and wallet not known -> signal the client to hit /api/wallets/link for signup
     cookieStore.delete(NONCE_COOKIE_NAME);
-
-    if (type !== "link") {
-      const { accessToken, refreshToken } = await createSupabaseTokens({
-        id: userProfile.id,
-        username: userProfile.username,
-        walletAddress,
-        chainId,
-      });
-
-      await ctx.supabase.anon.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-    }
-
     return {
-      type,
-      user: {
-        id: userProfile.id,
-        walletAddress,
-        chainId,
-        username: userProfile.username,
-      },
+      type: "needs_signup" as const,
+      siwe: { address: walletAddress, chainId },
     };
   });

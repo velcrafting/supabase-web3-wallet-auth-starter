@@ -1,28 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { WagmiProvider, useAccount, useDisconnect, useSignMessage } from 'wagmi';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { createAppKit } from '@reown/appkit/react';
-import { mainnet } from '@reown/appkit/networks';
-import { wagmiAdapter, config, projectId } from '@/lib/web3/client';
-import { useSession, AuthStatus } from '@/lib/hooks';
-import { nonce } from "@/lib/actions/auth/nonce";
-import { createSiweMessage } from 'viem/siwe';
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { WagmiProvider, useAccount, useDisconnect, useSignMessage } from "wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { createAppKit } from "@reown/appkit/react";
+import { mainnet } from "@reown/appkit/networks";
+import { wagmiAdapter, config, projectId } from "@/lib/web3/client";
+import { useSession, AuthStatus } from "@/lib/hooks";
+import { createSiweMessage } from "viem/siwe";
 
 const appKit = createAppKit({
   adapters: [wagmiAdapter],
   networks: [mainnet],
   projectId,
   metadata: {
-    name: 'Battlechips',
-    description: 'Battlechips Web3 App',
-    url: process.env.NODE_ENV === 'development'
-      ? 'http://localhost:3000'
-      : 'https://battlechips.app',
-    icons: ['https://battlechips.app/icon.png'],
+    name: "Battlechips",
+    description: "Battlechips Web3 App",
+    url: process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://battlechips.app",
+    icons: ["https://battlechips.app/icon.png"],
   },
 });
 
@@ -30,6 +27,36 @@ const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { data: session, setData: setSession, status, setStatus } = useSession();
   const [queryClient] = useState(() => new QueryClient());
+
+  // 1) On mount, hydrate session from cookie via /api/auth/me
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        setStatus("loading");
+        const r = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+        const raw = await r.text();
+        const json = JSON.parse(raw || "{}");
+        if (!cancelled) {
+          if (json?.user) {
+            setSession({ user: json.user });
+            setStatus("authenticated");
+          } else {
+            setSession(null as any);
+            setStatus("unauthenticated");
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setSession(null as any);
+          setStatus("unauthenticated");
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [setSession, setStatus]);
 
   return (
     <WagmiProvider config={config}>
@@ -65,70 +92,90 @@ const SIWEHandler = ({
   const { address, chainId, isConnected } = useAccount();
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
-  const hasRun = useRef(false);
-  const lastAddress = useRef<string | undefined>(undefined);
 
+  const hasRunForAddr = useRef<string | null>(null);
+
+  // Reset the “has run” marker when address changes
   useEffect(() => {
-    if (address !== lastAddress.current) {
-      hasRun.current = false;
-      lastAddress.current = address;
+    if (address && hasRunForAddr.current !== address) {
+      hasRunForAddr.current = null;
     }
   }, [address]);
 
   useEffect(() => {
-    if (!isConnected || hasRun.current || status === 'loading') return;
-    if (session && session.user.walletAddress?.toLowerCase() === address?.toLowerCase()) return;
+    // Gate SIWE:
+    // - wait until /api/auth/me resolved (status !== "loading")
+    // - only run if connected AND no app session
+    if (status === "loading") return;
+    if (!isConnected || !address || !chainId) return;
+    if (session?.user) return; // we already have an app session, no SIWE
+    if (hasRunForAddr.current === address) return;
 
     const runSIWE = async () => {
       try {
-        hasRun.current = true;
-        setStatus('loading');
+        hasRunForAddr.current = address;
+        setStatus("loading");
 
-        const nonceValue = await nonce();
-        if (!nonceValue?.data?.nonce) {
-          console.error('❌ Failed to fetch nonce:', nonceValue);
-          disconnect();
-          return;
+        // 1) GET nonce (server sets HTTP-only cookie)
+        const nRes = await fetch("/api/auth/nonce", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+        const nRaw = await nRes.text();
+        let nonceVal: string | undefined;
+        try {
+          nonceVal = JSON.parse(nRaw)?.nonce;
+        } catch {
+          throw new Error(`Nonce endpoint bad response ${nRes.status}`);
         }
+        if (!nRes.ok || !nonceVal) throw new Error("Failed to obtain nonce");
 
+        // 2) Create & sign SIWE message
         const message = createSiweMessage({
           domain: window.location.host,
-          address: address!,
-          chainId: chainId!,
-          statement: 'Sign in with Ethereum',
+          address,
+          chainId,
+          statement: "Sign in with Ethereum",
           uri: window.location.origin,
-          version: '1',
-          nonce: nonceValue.data.nonce,
+          version: "1",
+          nonce: nonceVal,
         });
-
         const signature = await signMessageAsync({ message });
-        const res = await fetch('/api/wallets/link', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+
+        // 3) Verify
+        const res = await fetch("/api/wallets/link", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({ message, signature }),
         });
-        const data = await res.json();
-
+        const raw = await res.text();
+        let data: any;
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          throw new Error(`Server returned non-JSON ${res.status}`);
+        }
         if (!res.ok) {
-          console.error('❌ Verify failed:', data);
-          disconnect();
-          return;
+          throw new Error(data?.error ?? `HTTP ${res.status}`);
         }
 
-        if (data.type !== 'link') {
-          setSession({ user: data.user });
-        } else {
-          setStatus('authenticated');
-        }
+        // 4) Update session from response (or do a quick /me fetch)
+        setSession({ user: data.user });
+        setStatus("authenticated");
         router.refresh();
       } catch (err) {
-        console.error('❌ SIWE error:', err);
-        disconnect();
+        console.error("SIWE error:", err);
+        // keep wallet connected; just mark unauthenticated so user can retry
+        setStatus("unauthenticated");
+        hasRunForAddr.current = null; // allow retry
       }
     };
 
     runSIWE();
-  }, [isConnected, session, address, chainId, status]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, address, chainId, status, session?.user]);
 
   return null;
 };

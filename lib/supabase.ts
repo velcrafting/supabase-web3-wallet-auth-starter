@@ -1,7 +1,8 @@
+// lib/supabase.ts
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { jwtVerify } from "jose";
-
 import { getCookieOptions } from "@/lib/utils";
 
 export type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>;
@@ -41,86 +42,63 @@ export type SupabaseToken = {
   };
 };
 
+/**
+ * Anonymous client for SSR that reads/writes auth cookies.
+ * Use this for normal user session reads/writes.
+ */
 export async function createAnonClient() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL environment variable is not set");
-  }
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    throw new Error(
-      "NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable is not set",
-    );
-  }
+  if (!url) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not set");
+  if (!anon) throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY is not set");
 
   const cookieStore = await cookies();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookieOptions: getCookieOptions(),
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
+  return createServerClient(url, anon, {
+    cookieOptions: getCookieOptions(),
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
+      },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options),
+          );
+        } catch {
+          // Called from a Server Component: safe to ignore.
+        }
       },
     },
-  );
+  });
 }
 
-export async function createServiceRoleClient() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL environment variable is not set");
-  }
+/**
+ * Service-role client.
+ * Do NOT use the SSR helper here; do NOT attach cookies.
+ * This must stay isolated and stateless.
+ */
+export function createServiceRoleClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error(
-      "SUPABASE_SERVICE_ROLE_KEY environment variable is not set",
-    );
-  }
+  if (!url) throw new Error("NEXT_PUBLIC_SUPABASE_URL is not set");
+  if (!serviceRole) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
 
-  const cookieStore = await cookies();
-
-  // NOTE: probably disable all the cookies stuff here?
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
-      },
-    },
-  );
+  return createClient(url, serviceRole, {
+    auth: { persistSession: false },
+    global: { headers: { "X-Client-Role": "service" } }, // optional, helpful in logs
+  });
 }
 
+/**
+ * Reads the current Supabase session via anon client,
+ * then validates your custom JWT (signed with AUTH_SECRET) and returns a normalized shape.
+ */
 export async function getSession() {
-  if (!process.env.AUTH_SECRET) {
-    throw new Error("AUTH_SECRET is not set");
-  }
+  const AUTH_SECRET = process.env.AUTH_SECRET;
+  if (!AUTH_SECRET) throw new Error("AUTH_SECRET is not set");
 
   const supabase = await createAnonClient();
 
@@ -129,12 +107,10 @@ export async function getSession() {
     error,
   } = await supabase.auth.getSession();
 
-  if (!session || error) {
-    return null;
-  }
+  if (!session || error) return null;
 
   try {
-    const key = new TextEncoder().encode(process.env.AUTH_SECRET);
+    const key = new TextEncoder().encode(AUTH_SECRET);
     const { payload: decoded }: { payload: SupabaseToken } = await jwtVerify(
       session.access_token,
       key,
@@ -158,7 +134,7 @@ export async function getSession() {
     };
 
     return validatedSession;
-  } catch (err) {
+  } catch {
     return null;
   }
 }

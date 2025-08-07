@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { GlobeIcon, Home, LogOut } from "lucide-react";
 import { useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
@@ -44,20 +45,20 @@ const ProfileImage: React.FC<{ chain: string; address: string }> = ({
   const [c1, c2, c3] = generateColours(`${chain}:${address}`);
   return (
     <div
-      style={{
-        backgroundImage: `conic-gradient(from -45deg, ${c1}, ${c2}, ${c3})`,
-      }}
+      style={{ backgroundImage: `conic-gradient(from -45deg, ${c1}, ${c2}, ${c3})` }}
       className="size-9 shrink-0 rounded overflow-hidden"
     />
   );
 };
 
 const Header = () => {
+  const router = useRouter();
   const [isHeaderShown, setIsHeaderShown] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const { disconnect } = useDisconnect();
-  const { data: session } = useSession();
+  const { data: session, setData: setSession, setStatus } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -65,10 +66,37 @@ const Header = () => {
       setIsHeaderShown(currentScrollY < lastScrollY || currentScrollY < 56);
       setLastScrollY(currentScrollY);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
+
+  const handleSignOut = async () => {
+    try {
+      // 1) Clear server cookies
+      await fetch("/api/auth/signout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // 2) Disconnect wallet (optional but nice UX)
+      disconnect();
+
+      // 3) Clear client session state
+      setSession(null);
+      setStatus("unauthenticated");
+
+      // 4) Close menu + refresh UI
+      setIsMenuOpen(false);
+      router.refresh();
+    } catch (e) {
+      console.error("Sign out failed:", e);
+      // Still clear client-side so user isn’t stuck
+      setSession(null);
+      setStatus("unauthenticated");
+      setIsMenuOpen(false);
+      router.refresh();
+    }
+  };
 
   return (
     <header
@@ -84,7 +112,7 @@ const Header = () => {
           <span className="sr-only">Web3 App</span>
         </Link>
 
-        <nav className="ml-auto flex gap-4 sm:gap-6"></nav>
+        <nav className="ml-auto flex gap-4 sm:gap-6" />
 
         <div className="ml-4">
           {session ? (
@@ -124,7 +152,7 @@ const Header = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="w-full cursor-pointer"
-                  onClick={() => disconnect()}
+                  onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Sign out</span>
