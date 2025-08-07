@@ -7,7 +7,7 @@ export type Session =
         id: string;
         username: string;
         walletAddress: string;
-        chainId: number;
+        chainId: string;
       };
     }
   | null

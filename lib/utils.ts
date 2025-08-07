@@ -11,8 +11,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function getChainName(chainId: number) {
-  switch (chainId) {
+export function getChainName(chainId: string | number) {
+  const id = Number(chainId);
+  switch (id) {
     case mainnet.id:
       return "Ethereum";
     case sepolia.id:

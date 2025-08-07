@@ -23,7 +23,7 @@ const createSupabaseTokens = async ({
   id: string;
   username: string;
   walletAddress: string;
-  chainId: number;
+  chainId: string;
 }) => {
   const key = new TextEncoder().encode(AUTH_SECRET);
   const basePayload = {
@@ -84,7 +84,7 @@ export const verify = publicProcedure
     }
 
     const walletAddress = siweMessage.address.toLowerCase();
-    const chainId = siweMessage.chainId;
+    const chainId = String(siweMessage.chainId);
 
     const existingWallet = await ctx.db.query.userWallets.findFirst({
       where: and(

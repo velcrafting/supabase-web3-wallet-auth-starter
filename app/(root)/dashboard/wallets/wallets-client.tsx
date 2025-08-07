@@ -1,6 +1,8 @@
 'use client';
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useRouter } from 'next/navigation';
+
 import { Button } from '@/components/ui/button';
 import { getChainName, shortenAddress } from '@/lib/utils';
 
@@ -11,14 +13,36 @@ interface Wallet {
 }
 
 const WalletsClient = ({ wallets }: { wallets: Wallet[] }) => {
+  const router = useRouter();
+
+  const onRemove = async (id: string) => {
+    await fetch(`/api/wallets/${id}`, { method: 'DELETE' });
+    router.refresh();
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-      <h3 className="font-semibold mb-4">Linked Wallets</h3>
+      <h3 className="font-semibold mb-2">Linked Wallets</h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Connecting a new wallet will link it to your current profile.
+      </p>
       <ul className="space-y-2">
         {wallets.length > 0 ? (
           wallets.map((w) => (
-            <li key={w.id} className="text-sm">
-              {getChainName(w.chainId)}: {shortenAddress(w.walletAddress)}
+            <li
+              key={w.id}
+              className="text-sm flex items-center justify-between gap-2"
+            >
+              <span>
+                {getChainName(w.chainId)}: {shortenAddress(w.walletAddress)}
+              </span>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => onRemove(w.id)}
+              >
+                Remove wallet
+              </Button>
             </li>
           ))
         ) : (
@@ -28,7 +52,7 @@ const WalletsClient = ({ wallets }: { wallets: Wallet[] }) => {
       <div className="mt-4">
         <ConnectButton.Custom>
           {({ openConnectModal }) => (
-            <Button onClick={openConnectModal}>Add Wallet</Button>
+            <Button onClick={openConnectModal}>Link wallet</Button>
           )}
         </ConnectButton.Custom>
       </div>

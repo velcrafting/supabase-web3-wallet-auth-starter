@@ -33,7 +33,7 @@ export type SupabaseToken = {
   app_metadata: {
     provider: "walletconnect";
     providers: ["walletconnect"];
-    chainId: number;
+    chainId: string;
     walletAddress: `0x${string}`;
   };
   user_metadata: {

@@ -44,6 +44,15 @@ Finally, run the app:
 pnpm dev
 ```
 
+## Multi-wallet flow
+
+1. Sign in with any wallet to create a session.
+2. Navigate to **Dashboard → Wallets**.
+3. Click **Link wallet** and complete the signature to attach another wallet to the current profile.
+4. Use **Remove wallet** next to any entry to unlink it. The list should update after each action.
+
+These steps exercise the API routes for linking and removing wallets so contributors can verify the feature locally.
+
 ## RLS configuration
 
 In order to be able to use the RLS wrapper, you need to first create a new `rls_client` postgres user and use that in your `DATABASE_URL` env variable instead of the default `postgres` which bypasses RLS:

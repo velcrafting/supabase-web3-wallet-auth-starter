@@ -10,7 +10,6 @@ import { mainnet } from '@reown/appkit/networks';
 import { wagmiAdapter, config, projectId } from '@/lib/web3/client';
 import { useSession, AuthStatus } from '@/lib/hooks';
 import { nonce } from "@/lib/actions/auth/nonce";
-import { verify } from "@/lib/actions/auth/verify";
 import { createSiweMessage } from 'viem/siwe';
 
 const appKit = createAppKit({
@@ -103,16 +102,21 @@ const SIWEHandler = ({
         });
 
         const signature = await signMessageAsync({ message });
-        const res = await verify({ message, signature });
+        const res = await fetch('/api/wallets/link', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, signature }),
+        });
+        const data = await res.json();
 
-        if (res?.error || !res?.data) {
-          console.error('❌ Verify failed:', res.error);
+        if (!res.ok) {
+          console.error('❌ Verify failed:', data);
           disconnect();
           return;
         }
 
-        if (res.data.type !== 'link') {
-          setSession({ user: res.data.user });
+        if (data.type !== 'link') {
+          setSession({ user: data.user });
         } else {
           setStatus('authenticated');
         }

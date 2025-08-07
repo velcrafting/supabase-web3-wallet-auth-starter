@@ -15,6 +15,13 @@
       "when": 1734701113772,
       "tag": "0001_right_human_torch",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1754530566682,
+      "tag": "0002_busy_cerise",
+      "breakpoints": true
     }
   ]
 }

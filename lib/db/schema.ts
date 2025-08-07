@@ -2,7 +2,6 @@ import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
-  bigint,
   timestamp,
   foreignKey,
   uuid,
@@ -24,7 +23,7 @@ export const profiles = pgTable(
     foreignKey({
       columns: [t.id],
       foreignColumns: [authUsers.id],
-      name: "profiles_id_fk",
+            name: "profiles_id_fk",
     }).onDelete("cascade"),
     pgPolicy("Enable read access for all users", {
       as: "permissive",
@@ -49,11 +48,11 @@ export const userWallets = pgTable(
   "user_wallets",
   {
     id: uuid().primaryKey(),
-    userId: uuid()
+    userId: uuid("user_id")
       .notNull()
       .references(() => profiles.id, { onDelete: "cascade" }),
     walletAddress: text().notNull(),
-    chainId: bigint({ mode: "number" }).notNull(),
+    chainId: text().notNull(),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -71,8 +70,8 @@ export const userWallets = pgTable(
       as: "permissive",
       to: authenticatedRole,
       for: "all",
-      using: sql`(SELECT auth.uid()) = user_id`,
-      withCheck: sql`(SELECT auth.uid()) = user_id`,
+      using: sql`((SELECT auth.uid()) = user_id)`,
+      withCheck: sql`((SELECT auth.uid()) = user_id)`,
     }),
   ],
 );
