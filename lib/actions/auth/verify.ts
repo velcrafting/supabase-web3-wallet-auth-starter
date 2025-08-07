@@ -123,9 +123,10 @@ export const verify = publicProcedure
       });
       type = "link";
     } else {
-   // Create Supabase user (let it auto-generate the ID)
+      // Create Supabase user (and mirror to local DB)
       const username = generateDegenerateUsername(walletAddress);
       const email = `${walletAddress}@wallet.local`;
+
       const { data, error } = await ctx.supabase.serviceRole.auth.admin.createUser({
         email,
         email_confirm: true,
@@ -137,6 +138,7 @@ export const verify = publicProcedure
       });
 
       if (error || !data?.user?.id) {
+        console.error("❌ Supabase user creation error:", error);
         throw new ActionError({ message: "Failed to create user", code: 500 });
       }
 
@@ -147,6 +149,14 @@ export const verify = publicProcedure
         userId: id,
         walletAddress,
         chainId,
+      });
+
+      await ctx.db.insert(profiles).values({
+        id,
+        username,
+        email,
+        wallet_address: walletAddress,
+        chain_id: chainId,
       });
 
       userProfile = { id, username };

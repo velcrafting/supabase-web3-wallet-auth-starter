@@ -17,6 +17,7 @@ export const profiles = pgTable(
   {
     id: uuid().primaryKey(),
     username: text().notNull(),
+    email: text("email").notNull(),
     wallet_address: text("wallet_address").notNull(),
     chain_id: bigint("chain_id", { mode: "number" }).notNull(),
 
