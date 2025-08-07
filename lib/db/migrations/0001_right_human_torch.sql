@@ -5,8 +5,14 @@ LANGUAGE plpgsql
 SECURITY DEFINER set search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, wallet_address, chain_id, username)
-  VALUES (NEW.id, NEW.raw_user_meta_data->>'walletAddress', (NEW.raw_user_meta_data->>'chainId')::BIGINT, NEW.raw_user_meta_data->>'username');
+  INSERT INTO public.profiles (id, email, wallet_address, chain_id, username)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    NEW.raw_user_meta_data->>'walletAddress',
+    (NEW.raw_user_meta_data->>'chainId')::BIGINT,
+    NEW.raw_user_meta_data->>'username'
+  );
   RETURN NEW;
 END;
 $$;

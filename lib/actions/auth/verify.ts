@@ -151,14 +151,6 @@ export const verify = publicProcedure
         chainId,
       });
 
-      await ctx.db.insert(profiles).values({
-        id,
-        username,
-        email,
-        wallet_address: walletAddress,
-        chain_id: chainId,
-      });
-
       userProfile = { id, username };
       type = "signup";
     }
