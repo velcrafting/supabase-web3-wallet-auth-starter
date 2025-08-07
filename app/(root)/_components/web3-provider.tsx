@@ -38,6 +38,7 @@ const Web3Provider = ({ children }: { children: React.ReactNode }) => {
         <RainbowKitProvider>
           <SIWEHandler
             session={session}
+            status={status}
             setSession={setSession}
             setStatus={setStatus}
             router={router}
@@ -51,11 +52,13 @@ const Web3Provider = ({ children }: { children: React.ReactNode }) => {
 
 const SIWEHandler = ({
   session,
+  status,
   setSession,
   setStatus,
   router,
 }: {
   session: any;
+  status: AuthStatus;
   setSession: (data: any) => void;
   setStatus: React.Dispatch<React.SetStateAction<AuthStatus>>;
   router: any;
@@ -64,9 +67,18 @@ const SIWEHandler = ({
   const { disconnect } = useDisconnect();
   const { signMessageAsync } = useSignMessage();
   const hasRun = useRef(false);
+  const lastAddress = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!isConnected || hasRun.current || session !== undefined) return;
+    if (address !== lastAddress.current) {
+      hasRun.current = false;
+      lastAddress.current = address;
+    }
+  }, [address]);
+
+  useEffect(() => {
+    if (!isConnected || hasRun.current || status === 'loading') return;
+    if (session && session.user.walletAddress?.toLowerCase() === address?.toLowerCase()) return;
 
     const runSIWE = async () => {
       try {
@@ -99,7 +111,11 @@ const SIWEHandler = ({
           return;
         }
 
-        setSession(res.data);
+        if (res.data.type !== 'link') {
+          setSession({ user: res.data.user });
+        } else {
+          setStatus('authenticated');
+        }
         router.refresh();
       } catch (err) {
         console.error('❌ SIWE error:', err);
@@ -108,7 +124,7 @@ const SIWEHandler = ({
     };
 
     runSIWE();
-  }, [isConnected, session, address, chainId]);
+  }, [isConnected, session, address, chainId, status]);
 
   return null;
 };
