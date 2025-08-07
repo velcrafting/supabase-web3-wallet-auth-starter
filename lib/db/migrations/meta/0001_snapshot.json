@@ -14,6 +14,12 @@
           "primaryKey": true,
           "notNull": true
         },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "email": {
           "name": "email",
           "type": "text",
@@ -29,12 +35,6 @@
         "chain_id": {
           "name": "chain_id",
           "type": "bigint",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "username": {
-          "name": "username",
-          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -55,6 +55,33 @@
         "deleted_at": {
           "name": "deleted_at",
           "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_wins": {
+          "name": "total_wins",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_losses": {
+          "name": "total_losses",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "current_streak": {
+          "name": "current_streak",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "last_active": {
+          "name": "last_active",
+          "type": "timestamp",
           "primaryKey": false,
           "notNull": false
         }
@@ -81,15 +108,6 @@
       "policies": {
         "Enable read access for all users": {
           "name": "Enable read access for all users",
-          "as": "PERMISSIVE",
-          "for": "SELECT",
-          "to": [
-            "public"
-          ],
-          "using": "true"
-        },
-        "Enable update for users based on user id": {
-          "name": "Enable update for users based on user id",
           "as": "PERMISSIVE",
           "for": "UPDATE",
           "to": [

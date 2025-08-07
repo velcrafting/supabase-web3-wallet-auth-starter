@@ -6,7 +6,11 @@ CREATE TABLE IF NOT EXISTS "profiles" (
         "username" text NOT NULL,
         "created_at" timestamp with time zone DEFAULT now() NOT NULL,
         "updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-        "deleted_at" timestamp with time zone
+        "deleted_at" timestamp with time zone,
+		"total_wins" integer DEFAULT 0 NOT NULL,
+		"total_losses" integer DEFAULT 0 NOT NULL,
+		"current_streak" integer DEFAULT 0 NOT NULL,
+		"last_active" timestamp
 );
 --> statement-breakpoint
 ALTER TABLE "profiles" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
