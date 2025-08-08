@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { protectedProcedure } from "@/lib/actions/core";
 import { userWallets } from "@/lib/db/schema";
+import { recordActivity } from "./activity";
 
 export const getWallets = protectedProcedure.action(async ({ ctx }) => {
   return ctx.db.query.userWallets.findMany({
@@ -24,5 +25,9 @@ export const removeWallet = protectedProcedure
         ),
       );
 
+    await recordActivity(ctx.db, ctx.session.user.id, "wallet_unlink", {
+      walletId: input.id,
+    });
+    
     return true;
   });

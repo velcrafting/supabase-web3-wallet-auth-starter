@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { publicProcedure, ActionError } from "@/lib/actions/core";
 import { eq } from "drizzle-orm";
 import { profiles } from "@/lib/db/schema";
+import { recordActivity } from "@/lib/actions/activity";
 
 export const register = publicProcedure
   .input(z.object({ username: z.string().min(3).optional() }))
@@ -34,6 +35,8 @@ export const register = publicProcedure
       .update(profiles)
       .set({ username })
       .where(eq(profiles.id, session.user.id));
+
+    await recordActivity(db, session.user.id, "register", { username });
 
     await supabase.anon.auth.updateUser({
       data: {

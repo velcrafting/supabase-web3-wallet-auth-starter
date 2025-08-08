@@ -8,6 +8,7 @@ import { publicClient } from "@/lib/web3/server";
 import { profiles, userWallets } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { randomUUID } from "crypto";
+import { recordActivity } from "@/lib/actions/activity";
 
 const NONCE_COOKIE_NAME = "siwe_nonce";
 
@@ -69,6 +70,11 @@ export const verify = publicProcedure
 
       cookieStore.delete(NONCE_COOKIE_NAME);
 
+      await recordActivity(ctx.db, prof.id, "login", {
+        walletAddress,
+        chainId,
+      });
+
       return {
         type: "signin" as const,
         user: {
@@ -95,6 +101,12 @@ export const verify = publicProcedure
       });
 
       cookieStore.delete(NONCE_COOKIE_NAME);
+
+      await recordActivity(ctx.db, prof.id, "wallet_link", {
+        walletAddress,
+        chainId,
+      });
+
 
       return {
         type: "link" as const,

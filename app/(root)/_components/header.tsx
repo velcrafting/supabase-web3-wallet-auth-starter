@@ -111,8 +111,14 @@ const Header = () => {
           <GlobeIcon className="h-6 w-6" />
           <span className="sr-only">{siteConfig.name}</span>
         </Link>
-
-        <nav className="ml-auto flex gap-4 sm:gap-6" />
+        <nav className="ml-auto flex gap-4 sm:gap-6">
+          <Link
+            href="/dashboard/portfolio"
+            className="text-sm font-medium transition-colors hover:text-primary"
+          >
+            Portfolio
+          </Link>
+        </nav>
 
         <div className="ml-4">
           {session ? (

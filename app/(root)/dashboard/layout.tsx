@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboardIcon, ShieldIcon, WalletIcon } from "lucide-react";
+import { LayoutDashboardIcon, ShieldIcon, WalletIcon, CoinsIcon } from "lucide-react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -24,6 +24,13 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
               >
                 <WalletIcon className="h-5 w-5" />
                 <span>Wallets</span>
+              </Link>
+              <Link
+                href="/dashboard/mint-burn"
+                className="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+              >
+                <CoinsIcon className="h-5 w-5" />
+                <span>Mint/Burn</span>
               </Link>
               <Link
                 href="/dashboard/security"

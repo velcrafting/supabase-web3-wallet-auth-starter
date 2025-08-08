@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import { jwtVerify, errors } from "jose";
+import { destroySession } from "@/lib/actions/auth/session";
 
 const SESSION_COOKIE_NAME = "session";
 
@@ -16,7 +17,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   } catch (err) {
     console.warn("Invalid or expired JWT:", err);
-    return redirectToHome(request);
+    const response = redirectToHome(request);
+    if (err instanceof errors.JWTExpired) {
+      destroySession(response);
+    }
+    return response;
   }
 }
 

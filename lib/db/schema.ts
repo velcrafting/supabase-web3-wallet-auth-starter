@@ -6,6 +6,7 @@ import {
   integer,
   uuid,
   bigint,
+  jsonb,
   foreignKey,
   pgPolicy,
   uniqueIndex,
@@ -93,3 +94,67 @@ export const userWallets = pgTable(
 
 export type UserWallet = typeof userWallets.$inferSelect;
 export type NewUserWallet = typeof userWallets.$inferInsert;
+
+export const nfts = pgTable(
+  "nfts",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    tokenId: bigint("token_id", { mode: "number" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("nfts_token_id_unique").on(t.tokenId),
+
+    pgPolicy("Enable read access for all users", {
+      as: "permissive",
+      to: "public",
+      for: "select",
+      using: sql`true`,
+    }),
+
+    pgPolicy("Enable manage access for token owner", {
+      as: "permissive",
+      to: authenticatedRole,
+      for: "all",
+      using: sql`((SELECT auth.uid()) = user_id)`,
+      withCheck: sql`((SELECT auth.uid()) = user_id)`,
+    }),
+  ],
+);
+
+export type Nft = typeof nfts.$inferSelect;
+export type NewNft = typeof nfts.$inferInsert;
+
+export const activityLogs = pgTable(
+  "activity_logs",
+  {
+    id: uuid().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => profiles.id, { onDelete: "cascade" }),
+    action: text().notNull(),
+    metadata: jsonb().$type<Record<string, unknown>>().notNull().default(sql`'{}'::jsonb`),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  () => [
+    pgPolicy("Enable read access for owner", {
+      as: "permissive",
+      to: authenticatedRole,
+      for: "select",
+      using: sql`(SELECT auth.uid()) = user_id`,
+    }),
+
+    pgPolicy("Enable insert for owner", {
+      as: "permissive",
+      to: authenticatedRole,
+      for: "insert",
+      withCheck: sql`(SELECT auth.uid()) = user_id`,
+    }),
+  ],
+);
+
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type NewActivityLog = typeof activityLogs.$inferInsert;

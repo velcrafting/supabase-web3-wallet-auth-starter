@@ -3,7 +3,7 @@ import { decodeJwt } from "jose";
 import { twMerge } from "tailwind-merge";
 import { mainnet, sepolia } from "viem/chains";
 import { CookieOptionsWithName } from "@supabase/ssr";
-
+import { cookies } from "next/headers";
 import { SupabaseToken } from "@/lib/supabase";
 import { sessionCookieName } from "@/lib/constants";
 
@@ -39,11 +39,25 @@ export function decode(accessToken: string) {
 }
 
 export function getCookieOptions() {
+  let maxAge: number | undefined;
+  let expires: Date | undefined;
+
+  const token = cookies().get(sessionCookieName)?.value;
+  const decoded = token ? decode(token) : null;
+
+  if (decoded?.exp) {
+    const expMs = decoded.exp * 1000;
+    maxAge = Math.max(0, Math.floor((expMs - Date.now()) / 1000));
+    expires = new Date(expMs);
+  }
+
   return {
     name: sessionCookieName,
     httpOnly: true,
     secure: process.env.NODE_ENV !== "development",
     sameSite: "lax",
+    ...(typeof maxAge === "number" ? { maxAge } : {}),
+    ...(expires ? { expires } : {}),
   } satisfies CookieOptionsWithName;
 }
 

@@ -256,6 +256,14 @@ export async function POST(req: Request) {
       tookMs: Date.now() - t0,
     });
 
+    await admin.from("activity_logs").insert({
+      id: randomUUID(),
+      user_id: profileId!,
+      action: type,
+      metadata: { walletAddress, chainId },
+      created_at: new Date().toISOString(),
+    });
+
     res.cookies.set(SESSION_COOKIE_NAME, accessToken, {
       httpOnly: true,
       sameSite: "lax",
