@@ -7,7 +7,7 @@ import { GlobeIcon, Home, LogOut } from "lucide-react";
 import { useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-
+import { siteConfig } from "@/lib/siteConfig";
 import { cn, getChainName, shortenAddress } from "@/lib/utils";
 import { useSession } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
@@ -109,7 +109,7 @@ const Header = () => {
         <div className="absolute inset-0 h-[125%] -z-[1] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 [mask-image:linear-gradient(0deg,transparent,#000)]" />
         <Link className="flex items-center justify-center" href="/">
           <GlobeIcon className="h-6 w-6" />
-          <span className="sr-only">Web3 App</span>
+          <span className="sr-only">{siteConfig.name}</span>
         </Link>
 
         <nav className="ml-auto flex gap-4 sm:gap-6" />

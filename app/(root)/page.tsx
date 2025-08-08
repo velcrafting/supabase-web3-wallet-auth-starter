@@ -1,5 +1,5 @@
 import { WalletIcon, ShieldCheckIcon, ArrowRightIcon } from "lucide-react";
-
+import { siteConfig } from "@/lib/siteConfig";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -9,10 +9,10 @@ export default function Home() {
         <div className="container px-4 md:px-6 mx-auto">
           <div className="flex flex-col items-center space-y-4 text-center">
             <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-              Web3 Sample App
+              {siteConfig.name}
             </h1>
             <p className="mx-auto max-w-[600px] text-gray-500 md:text-xl dark:text-gray-400">
-              Experience decentralized applications. Connect your wallet and explore the future of the web.
+              {siteConfig.description}
             </p>
             <Button className="mt-6">Get Started</Button>
           </div>

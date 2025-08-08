@@ -28,9 +28,14 @@ This is a starter for building a web3 app with hybrid authentication using Rainb
 pnpm dlx create-next-app@latest --example "https://github.com/Locastic/next-web3-hybrid-starter"
 ```
 
+## Customization
+
+Project-specific metadata is centralized in `lib/siteConfig.ts`. Update this file along with your `.env` to tailor the template for your project.
+
 ## Running Locally
 
-copy `.env.example` to `.env` and fill the values.
+copy `.env.example` to `.env` and fill the values, then update `lib/siteConfig.ts` with your project details.
+
 
 Then run the database migrations:
 

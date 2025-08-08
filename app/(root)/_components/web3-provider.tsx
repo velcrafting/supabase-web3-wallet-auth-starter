@@ -10,17 +10,13 @@ import { mainnet } from "@reown/appkit/networks";
 import { wagmiAdapter, config, projectId } from "@/lib/web3/client";
 import { useSession, AuthStatus } from "@/lib/hooks";
 import { createSiweMessage } from "viem/siwe";
+import { walletKitMetadata } from "@/lib/siteConfig";
 
 const appKit = createAppKit({
   adapters: [wagmiAdapter],
   networks: [mainnet],
   projectId,
-  metadata: {
-    name: "Battlechips",
-    description: "Battlechips Web3 App",
-    url: process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://battlechips.app",
-    icons: ["https://battlechips.app/icon.png"],
-  },
+  metadata: walletKitMetadata,
 });
 
 const Web3Provider = ({ children }: { children: React.ReactNode }) => {
