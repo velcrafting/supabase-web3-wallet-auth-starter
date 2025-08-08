@@ -4,9 +4,10 @@ import { removeWallet } from "@/lib/actions/wallet";
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const res = await removeWallet({ id: params.id });
+  const { id } = await params;
+  const res = await removeWallet({ id });
 
   if (res.error) {
     return NextResponse.json({ error: res.error }, { status: 400 });

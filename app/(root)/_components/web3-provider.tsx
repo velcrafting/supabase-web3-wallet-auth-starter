@@ -10,7 +10,7 @@ import { mainnet } from "@reown/appkit/networks";
 import { wagmiAdapter, config, projectId } from "@/lib/web3/client";
 import { useSession, AuthStatus } from "@/lib/hooks";
 import { createSiweMessage } from "viem/siwe";
-import { walletKitMetadata } from "@/lib/siteConfig";
+import { walletKitMetadata, authConfig } from "@/lib/siteConfig";
 
 const appKit = createAppKit({
   adapters: [wagmiAdapter],
@@ -132,7 +132,7 @@ const SIWEHandler = ({
           domain: window.location.host,
           address,
           chainId,
-          statement: "Sign in with Ethereum",
+          statement: authConfig.siweStatement,
           uri: window.location.origin,
           version: "1",
           nonce: nonceVal,

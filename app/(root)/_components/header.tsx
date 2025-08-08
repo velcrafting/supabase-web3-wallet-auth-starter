@@ -7,7 +7,7 @@ import { GlobeIcon, Home, LogOut } from "lucide-react";
 import { useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { siteConfig } from "@/lib/siteConfig";
+import { siteConfig, authConfig } from "@/lib/siteConfig";
 import { cn, getChainName, shortenAddress } from "@/lib/utils";
 import { useSession } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
@@ -155,7 +155,7 @@ const Header = () => {
                   onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  <span>{authConfig.signOut}</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -168,8 +168,8 @@ const Header = () => {
                   disabled={!!account || authenticationStatus === "loading"}
                 >
                   {!!account || authenticationStatus === "loading"
-                    ? "Loading.."
-                    : "Connect Wallet"}
+                    ? authConfig.loading
+                    : authConfig.connectWallet}
                 </Button>
               )}
             </ConnectButton.Custom>

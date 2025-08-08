@@ -13,3 +13,10 @@ export const walletKitMetadata = {
   url: siteConfig.url,
   icons: [siteConfig.icon],
 };
+
+export const authConfig = {
+  siweStatement: `Sign in to ${siteConfig.name}`,
+  signOut: `Sign out of ${siteConfig.name}`,
+  connectWallet: "Connect Wallet",
+  loading: "Loading..",
+};
