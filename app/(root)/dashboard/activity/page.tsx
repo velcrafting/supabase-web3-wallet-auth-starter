@@ -1,5 +1,5 @@
 import Link from "next/link";
-
+import type { ActivityLog } from "@/lib/db/schema";
 import { getActivityLogs } from "@/lib/actions/activity";
 
 const DashboardActivityPage = async ({
@@ -15,7 +15,7 @@ const DashboardActivityPage = async ({
       <h1 className="text-2xl font-bold">Activity</h1>
       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
         <ul className="space-y-2">
-          {(logs ?? []).map((log) => (
+          {(logs ?? []).map((log: ActivityLog) => (
             <li key={log.id} className="border-b pb-2 last:border-b-0">
               <div className="flex justify-between">
                 <span>{log.action}</span>

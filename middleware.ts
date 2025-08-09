@@ -1,27 +1,26 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify, errors } from "jose";
-import { destroySession } from "@/lib/actions/auth/session";
 
 const SESSION_COOKIE_NAME = "session";
 
 export async function middleware(request: NextRequest) {
-  // This middleware only runs on /dashboard via the matcher below.
   const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return redirectToHome(request);
 
   try {
-    const secret = process.env.AUTH_SECRET; // was JWT_SECRET. Your tokens are signed with AUTH_SECRET.
+    const secret = process.env.AUTH_SECRET;
     if (!secret) throw new Error("AUTH_SECRET is not set");
+
     await jwtVerify(token, new TextEncoder().encode(secret));
     return NextResponse.next();
   } catch (err) {
-    console.warn("Invalid or expired JWT:", err);
-    const response = redirectToHome(request);
-    if (err instanceof errors.JWTExpired) {
-      destroySession(response);
-    }
-    return response;
+    // Token invalid or expired. Redirect and nuke the cookie in Edge.
+    const res = redirectToHome(request);
+    res.cookies.delete(SESSION_COOKIE_NAME);
+    // If you set domain/path on the cookie, mirror them on deletion.
+    // res.cookies.set(SESSION_COOKIE_NAME, "", { expires: new Date(0), path: "/" });
+    return res;
   }
 }
 
@@ -31,7 +30,4 @@ function redirectToHome(request: NextRequest) {
   return NextResponse.redirect(url);
 }
 
-// Only protect the dashboard. Do not touch /api or anything else.
-export const config = {
-  matcher: ["/dashboard/:path*"],
-};
+export const config = { matcher: ["/dashboard/:path*"] };

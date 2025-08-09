@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { GlobeIcon, Home, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
@@ -27,7 +27,6 @@ function stringToColour(input: string) {
     (((hash >> 16) & 0xff) << 16) | (((hash >> 8) & 0xff) << 8) | (hash & 0xff);
   return `#${(0x1000000 + color).toString(16).slice(1)}`;
 }
-
 function generateColours(s: string) {
   const s1 = s.substring(0, s.length / 3);
   const s2 = s.substring(s.length / 3, (2 * s.length) / 3);
@@ -37,11 +36,7 @@ function generateColours(s: string) {
   const c3 = stringToColour(s3);
   return [c1, c2, c3];
 }
-
-const ProfileImage: React.FC<{ chain: string; address: string }> = ({
-  chain,
-  address,
-}) => {
+const ProfileImage: React.FC<{ chain: string; address: string }> = ({ chain, address }) => {
   const [c1, c2, c3] = generateColours(`${chain}:${address}`);
   return (
     <div
@@ -51,46 +46,17 @@ const ProfileImage: React.FC<{ chain: string; address: string }> = ({
   );
 };
 
-const Header = () => {
+export default function Header() {
   const router = useRouter();
-  const [isHeaderShown, setIsHeaderShown] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const { disconnect } = useDisconnect();
   const { data: session, setData: setSession, setStatus } = useSession();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setIsHeaderShown(currentScrollY < lastScrollY || currentScrollY < 56);
-      setLastScrollY(currentScrollY);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
-
   const handleSignOut = async () => {
     try {
-      // 1) Clear server cookies
-      await fetch("/api/auth/signout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      // 2) Disconnect wallet (optional but nice UX)
+      await fetch("/api/auth/signout", { method: "POST", credentials: "include" });
       disconnect();
-
-      // 3) Clear client session state
-      setSession(null);
-      setStatus("unauthenticated");
-
-      // 4) Close menu + refresh UI
-      setIsMenuOpen(false);
-      router.refresh();
-    } catch (e) {
-      console.error("Sign out failed:", e);
-      // Still clear client-side so user isn’t stuck
+    } finally {
       setSession(null);
       setStatus("unauthenticated");
       setIsMenuOpen(false);
@@ -99,28 +65,33 @@ const Header = () => {
   };
 
   return (
-    <header
-      className={cn(
-        "fixed w-full transition-all duration-300 z-50",
-        isHeaderShown ? "top-0" : "-top-14"
-      )}
-    >
-      <div className="container mx-auto px-4 lg:px-6 h-14 flex items-center">
-        <div className="absolute inset-0 h-[125%] -z-[1] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 [mask-image:linear-gradient(0deg,transparent,#000)]" />
-        <Link className="flex items-center justify-center" href="/">
-          <GlobeIcon className="h-6 w-6" />
-          <span className="sr-only">{siteConfig.name}</span>
-        </Link>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Link
-            href="/dashboard/portfolio"
-            className="text-sm font-medium transition-colors hover:text-primary"
-          >
+    <header className="fixed top-0 inset-x-0 h-14 z-50">
+      <div className="relative container mx-auto px-4 lg:px-6 h-full flex items-center">
+        <div className="absolute inset-0 -z-[1] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" />
+
+        {/* Left: Logo */}
+        <div className="flex items-center">
+          <Link className="flex items-center justify-center" href="/">
+            <GlobeIcon className="h-6 w-6" />
+            <span className="sr-only">{siteConfig.name}</span>
+          </Link>
+        </div>
+
+        {/* Center: Nav */}
+        <nav className="absolute left-1/2 -translate-x-1/2 flex gap-4 sm:gap-6">
+          <Link href="/dashboard/portfolio" className="text-sm font-medium hover:text-primary">
             Portfolio
+          </Link>
+          <Link href="/dashboard/activity" className="text-sm font-medium hover:text-primary">
+            Activity
+          </Link>
+          <Link href="/dashboard/mint-burn" className="text-sm font-medium hover:text-primary">
+            Mint or Burn
           </Link>
         </nav>
 
-        <div className="ml-4">
+        {/* Right: Session/Login */}
+        <div className="ml-auto flex items-center">
           {session ? (
             <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <DropdownMenuTrigger asChild>
@@ -129,25 +100,18 @@ const Header = () => {
                     chain={getChainName(session.user.chainId)}
                     address={session.user.walletAddress}
                   />
-                  <span className="text-sm font-medium text-foreground hidden sm:inline">
-                    {session.user.username
-                      ? session.user.username
-                      : shortenAddress(session.user.walletAddress)}
+                  <span className="text-sm font-medium hidden sm:inline">
+                    {session.user.username || shortenAddress(session.user.walletAddress)}
                   </span>
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <div className="p-2">
                   <h4 className="text-sm font-bold">
-                    Hello,{" "}
-                    {session.user.username
-                      ? session.user.username
-                      : shortenAddress(session.user.walletAddress)}
-                    !
+                    Hello, {session.user.username || shortenAddress(session.user.walletAddress)}!
                   </h4>
                   <small className="text-xs">
-                    {getChainName(session.user.chainId)}:
-                    {shortenAddress(session.user.walletAddress)}
+                    {getChainName(session.user.chainId)}:{shortenAddress(session.user.walletAddress)}
                   </small>
                 </div>
                 <DropdownMenuItem className="w-full cursor-pointer" asChild>
@@ -156,10 +120,7 @@ const Header = () => {
                     <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="w-full cursor-pointer"
-                  onClick={handleSignOut}
-                >
+                <DropdownMenuItem className="w-full cursor-pointer" onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{authConfig.signOut}</span>
                 </DropdownMenuItem>
@@ -184,6 +145,4 @@ const Header = () => {
       </div>
     </header>
   );
-};
-
-export default Header;
+}

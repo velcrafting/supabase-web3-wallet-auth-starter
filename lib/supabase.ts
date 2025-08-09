@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { jwtVerify } from "jose";
-import { getCookieOptions } from "@/lib/utils";
+import { getCookieOptions } from "@/lib/server/cookies";
 
 export type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>;
 
@@ -54,9 +54,10 @@ export async function createAnonClient() {
   if (!anon) throw new Error("NEXT_PUBLIC_SUPABASE_ANON_KEY is not set");
 
   const cookieStore = await cookies();
+  const cookieOptions = await getCookieOptions();
 
   return createServerClient(url, anon, {
-    cookieOptions: getCookieOptions(),
+    cookieOptions,
     cookies: {
       getAll() {
         return cookieStore.getAll();

@@ -5,12 +5,12 @@ import { getSession as baseGetSession } from "./getSession";
 
 export const getSession = baseGetSession;
 
-export function destroySession(response?: NextResponse) {
+export async function destroySession(response?: NextResponse) {
   if (response) {
     response.cookies.delete(sessionCookieName);
     response.cookies.delete(`${sessionCookieName}-refresh-token`);
   } else {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     cookieStore.delete(sessionCookieName);
     cookieStore.delete(`${sessionCookieName}-refresh-token`);
   }

@@ -44,7 +44,8 @@ function getChain(chainId: number) {
 export const mintNft = protectedProcedure
   .input(z.object({ tokenId: z.string() }))
   .action(async ({ ctx, input }) => {
-    const tokenId = BigInt(input.tokenId);
+    const tokenIdBigInt = BigInt(input.tokenId);
+    const tokenId = Number(input.tokenId);
     const account = privateKeyToAccount(privateKey);
     const walletClient = createWalletClient({
       account,
@@ -56,7 +57,7 @@ export const mintNft = protectedProcedure
       address: nftAddress,
       abi: nftAbi,
       functionName: "mint",
-      args: [ctx.session.user.app_metadata.walletAddress, tokenId],
+      args: [ctx.session.user.app_metadata.walletAddress, tokenIdBigInt],
     });
 
     await ctx.db.insert(nfts).values({
@@ -70,7 +71,8 @@ export const mintNft = protectedProcedure
 export const burnNft = protectedProcedure
   .input(z.object({ tokenId: z.string() }))
   .action(async ({ ctx, input }) => {
-    const tokenId = BigInt(input.tokenId);
+    const tokenIdBigInt = BigInt(input.tokenId);
+    const tokenId = Number(input.tokenId);
     const account = privateKeyToAccount(privateKey);
     const walletClient = createWalletClient({
       account,
@@ -82,13 +84,16 @@ export const burnNft = protectedProcedure
       address: nftAddress,
       abi: nftAbi,
       functionName: "burn",
-      args: [tokenId],
+      args: [tokenIdBigInt],
     });
 
     await ctx.db
       .delete(nfts)
       .where(
-        and(eq(nfts.tokenId, tokenId), eq(nfts.userId, ctx.session.user.id)),
+        and(
+          eq(nfts.tokenId, tokenId),
+          eq(nfts.userId, ctx.session.user.id),
+        ),
       );
 
     return { hash };
