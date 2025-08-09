@@ -1,14 +1,16 @@
 import Link from "next/link";
 import type { ActivityLog } from "@/lib/db/schema";
 import { getActivityLogs } from "@/lib/actions/activity";
+import { formatAction } from "@/lib/activity";
 
 export default async function DashboardActivityPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string | string[] }>;
+  searchParams?: { page?: string | string[] };
 }) {
-  const sp = (await searchParams) ?? {};
-  const pageStr = Array.isArray(sp.page) ? sp.page[0] : sp.page;
+  const pageStr = Array.isArray(searchParams?.page)
+    ? searchParams?.page[0]
+    : searchParams?.page;
   const page = Number(pageStr ?? "1") || 1;
 
   const { data: logs } = await getActivityLogs({ page, limit: 10 });
@@ -21,7 +23,7 @@ export default async function DashboardActivityPage({
           {(logs ?? []).map((log: ActivityLog) => (
             <li key={log.id} className="border-b pb-2 last:border-b-0">
               <div className="flex justify-between">
-                <span>{log.action}</span>
+                <span>{formatAction(log.action, log.metadata)}</span>
                 <span className="text-sm text-gray-500">
                   {new Date(log.createdAt).toLocaleString()}
                 </span>

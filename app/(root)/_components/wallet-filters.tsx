@@ -15,7 +15,7 @@ export default function WalletFilters({
   const isAll = selected.length === allWallets.length;
 
   function apply(next: `0x${string}`[]) {
-    const params = new URLSearchParams(sp?.toString());
+    const params = new URLSearchParams(sp.toString());
     if (next.length === allWallets.length) {
       params.delete("wallets"); // all
     } else {
@@ -29,7 +29,7 @@ export default function WalletFilters({
     <div className="flex items-center gap-2 flex-wrap">
       <button
         className={`px-2 py-1 rounded border ${isAll ? "bg-gray-200 dark:bg-gray-700" : ""}`}
-        onClick={() => apply(allWallets)}
+        onClick={() => apply([...allWallets])}
       >
         All
       </button>
