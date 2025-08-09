@@ -2,12 +2,15 @@ import Link from "next/link";
 import type { ActivityLog } from "@/lib/db/schema";
 import { getActivityLogs } from "@/lib/actions/activity";
 
-const DashboardActivityPage = async ({
+export default async function DashboardActivityPage({
   searchParams,
 }: {
-  searchParams?: { page?: string };
-}) => {
-  const page = Number(searchParams?.page ?? "1");
+  searchParams?: Promise<{ page?: string | string[] }>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const pageStr = Array.isArray(sp.page) ? sp.page[0] : sp.page;
+  const page = Number(pageStr ?? "1") || 1;
+
   const { data: logs } = await getActivityLogs({ page, limit: 10 });
 
   return (
@@ -31,6 +34,7 @@ const DashboardActivityPage = async ({
             </li>
           ))}
         </ul>
+
         <div className="flex justify-between mt-4">
           {page > 1 && (
             <Link href={`?page=${page - 1}`} className="text-sm">
@@ -46,6 +50,4 @@ const DashboardActivityPage = async ({
       </div>
     </>
   );
-};
-
-export default DashboardActivityPage;
+}
