@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { GlobeIcon, Home, LogOut, PieChart, Activity as ActivityIcon, Coins } from "lucide-react";
+import { GlobeIcon, Home, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
-import { siteConfig, authConfig } from "@/lib/siteConfig";
+import { siteConfig, authConfig } from "@/lib/config";
 import { getChainName, shortenAddress } from "@/lib/utils";
 import { useSession } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";

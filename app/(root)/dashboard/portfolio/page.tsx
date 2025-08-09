@@ -1,5 +1,5 @@
 // app/(root)/dashboard/portfolio/page.tsx
-import WalletPicker from "../../_components/wallet-picker";
+import WalletPicker from "@/components/web3/wallet-picker";
 import { PortfolioProvider } from "@/components/portfolio/context";
 import { normalizeParams, type SP } from "@/components/portfolio/use-portfolio-params";
 import { WIDGET_MAP, WIDGETS } from "@/components/portfolio/widget-registry";

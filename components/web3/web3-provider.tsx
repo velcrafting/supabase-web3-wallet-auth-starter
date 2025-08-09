@@ -10,9 +10,9 @@ import { mainnet } from "@reown/appkit/networks";
 import { wagmiAdapter, config, projectId } from "@/lib/web3/client";
 import { useSession, AuthStatus } from "@/lib/hooks";
 import { createSiweMessage } from "viem/siwe";
-import { walletKitMetadata, authConfig } from "@/lib/siteConfig";
+import { walletKitMetadata, authConfig } from "@/lib/config";
 
-const appKit = createAppKit({
+createAppKit({
   adapters: [wagmiAdapter],
   networks: [mainnet],
   projectId,

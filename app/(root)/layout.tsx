@@ -1,18 +1,18 @@
-import { SessionProvider } from "@/lib/contexts";
-import { getSession } from "@/lib/actions/auth/getSession";
-import ClientRoot from "./_components/client-root";
+// app/(dashboard)/layout.tsx  — server component
+import { SessionProvider } from '@/lib/auth/session-context';
+import { getSession } from '@/lib/actions/auth/getSession';
+import ClientRoot from '@/components/layout/client-root';
 
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getSession(); // Session | null
+
   return (
-    <SessionProvider sessionPromise={getSession()}>
-      <ClientRoot>
-        {children}
-      </ClientRoot>
+    <SessionProvider initialSession={session}>
+      <ClientRoot>{children}</ClientRoot>
     </SessionProvider>
   );
 }

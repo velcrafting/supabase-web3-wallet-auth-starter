@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils"; // helper for conditional classes if you have it
+import { cn } from "@/lib/utils";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();

@@ -30,12 +30,11 @@ pnpm dlx create-next-app@latest --example "https://github.com/Locastic/next-web3
 
 ## Customization
 
-Project-specific metadata is centralized in `lib/siteConfig.ts`. Update this file along with your `.env` to tailor the template for your project.
+Project-specific metadata is centralized in `lib/config/site.ts`. Update this file along with your `.env` to tailor the template for your project.
 
 ## Running Locally
 
-copy `.env.example` to `.env` and fill the values, then update `lib/siteConfig.ts` with your project details.
-
+copy `.env.example` to `.env` and fill the values, then update `lib/config/site.ts` with your project details.
 
 Then run the database migrations:
 

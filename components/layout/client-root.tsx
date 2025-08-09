@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Header from "./header";
 import Footer from "./footer";
 
-const Web3Provider = dynamic(() => import("./web3-provider"), { ssr: false });
+const Web3Provider = dynamic(() => import("@/components/web3/web3-provider"), { ssr: false });
 
 export default function ClientRoot({ children }: { children: React.ReactNode }) {
   return (

@@ -3,7 +3,7 @@ import type { PortfolioWidget } from "./types";
 import { ActivityWidget } from "./widgets/Activity";
 import { HoldingsWidget } from "./widgets/Holdings";
 import { ChainsWidget } from "./widgets/Chains";
-import { NetWorthWidget } from "./widgets/Networth";
+import { NetWorthWidget } from "./widgets/NetWorth";
 
 export const WIDGETS: PortfolioWidget[] = [
   ActivityWidget,
