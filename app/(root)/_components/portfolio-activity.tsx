@@ -1,6 +1,9 @@
 // app/(root)/_components/portfolio-activity.tsx
 // Server Component
-import { getActivityLogsSSR /* or getActivityByWalletsSSR */ } from "@/lib/actions/activity";
+import {
+  getActivityLogsSSR,
+  getActivityByWalletsSSR,
+} from "@/lib/actions/activity";
 
 export default async function PortfolioActivity({
   wallets,
@@ -9,7 +12,9 @@ export default async function PortfolioActivity({
   wallets: `0x${string}`[];
   page: number;
 }) {
-  const rows = await getActivityLogsSSR({ page, limit: 20 });
+  const rows = wallets.length
+    ? await getActivityByWalletsSSR({ wallets, page, limit: 20 })
+    : await getActivityLogsSSR({ page, limit: 20 });
   if (!rows) return <p className="text-sm text-muted-foreground">Sign in to view your activity.</p>;
   if (!rows.length) return <p className="text-sm text-muted-foreground">No activity yet.</p>;
 

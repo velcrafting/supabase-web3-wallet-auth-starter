@@ -9,9 +9,10 @@ export default async function DashboardActivityPage({
   searchParams?: { page?: string | string[] };
 }) {
   const pageStr = Array.isArray(searchParams?.page)
-    ? searchParams?.page[0]
+    ? searchParams.page[0]
     : searchParams?.page;
-  const page = Number(pageStr ?? "1") || 1;
+  const n = Number(pageStr ?? "1");
+  const page = Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
 
   const { data: logs } = await getActivityLogs({ page, limit: 10 });
 

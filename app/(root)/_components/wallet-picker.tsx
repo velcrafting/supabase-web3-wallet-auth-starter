@@ -38,10 +38,16 @@ export default function WalletPicker({ selected }: { selected?: `0x${string}` })
   // back-compat: if no URL wallets, seed from selected prop or connected address
   useEffect(() => {
     if (wallets.length === 0) {
-      if (selected && isHexAddress(selected)) setWallets([selected.toLowerCase() as `0x${string}`]);
-      else if (address && isHexAddress(address)) setWallets([address.toLowerCase() as `0x${string}`]);
+      let fallback: string | undefined;
+      if (selected && isHexAddress(selected)) fallback = selected.toLowerCase();
+      else if (address && isHexAddress(address)) fallback = address.toLowerCase();
+      if (fallback) {
+        const next = [fallback as `0x${string}`];
+        setWallets(next);
+        pushToUrl(next);
+      }
     }
-  }, [selected, address]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selected, address]);
 
   function pushToUrl(next: `0x${string}`[]) {
     const params = new URLSearchParams(sp.toString());

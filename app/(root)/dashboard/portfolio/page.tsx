@@ -16,9 +16,9 @@ function normalizeWallets(input?: string | string[]): `0x${string}`[] {
 export default async function PortfolioPage({
   searchParams,
 }: {
-  searchParams: Promise<SP>;
+  searchParams?: SP;
 }) {
-  const sp = (await searchParams) ?? {};
+  const sp = searchParams ?? {};
   const wallets = normalizeWallets(sp.wallet);
   const page = (() => {
     const n = Number(sp.page ?? "1");
