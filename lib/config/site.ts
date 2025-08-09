@@ -5,10 +5,19 @@ export const siteConfig = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   icon: "/icon.png",
   theme: {
-    primaryColor: "#4f46e5",
-    accentColor: "#10b981",
     fontFamily: "Inter, sans-serif",
     logo: "/logo.svg",
+    defaultTheme: "system",
+    brandColors: {
+      light: {
+        primary: "#4f46e5",
+        accent: "#10b981",
+      },
+      dark: {
+        primary: "#818cf8",
+        accent: "#34d399",
+      },
+    },
   },
   navigation: [
     { label: "Home", href: "/" },

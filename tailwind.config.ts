@@ -1,13 +1,13 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  darkMode: ["class"],
+  darkMode: ["class"], // Enable dark mode via the class
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  safelist: ["dark"],
+  safelist: ["dark"], // Ensures that the 'dark' class is allowed
   theme: {
     extend: {
       borderRadius: {
@@ -59,6 +59,9 @@ const config: Config = {
       }
     }
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate") // Ensure that you have installed tailwindcss-animate
+  ],
 };
+
 export default config;

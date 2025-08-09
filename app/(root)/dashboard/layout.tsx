@@ -41,9 +41,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
                     href={href}
                     className={cn(
                       "flex items-center space-x-2 rounded-md px-2 py-1 transition",
-                      "text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white",
-                      isActive &&
-                        "bg-gray-200 dark:bg-gray-700 shadow-inner text-gray-900 dark:text-white"
+                      "text-muted-foreground hover:text-primary",
+                      isActive && "bg-secondary shadow-inner text-foreground"
                     )}
                   >
                     <Icon className="h-5 w-5" />
