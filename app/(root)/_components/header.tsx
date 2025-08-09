@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { GlobeIcon, Home, LogOut } from "lucide-react";
+import { GlobeIcon, Home, LogOut, PieChart, Activity as ActivityIcon, Coins } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDisconnect } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { siteConfig, authConfig } from "@/lib/siteConfig";
-import { cn, getChainName, shortenAddress } from "@/lib/utils";
+import { getChainName, shortenAddress } from "@/lib/utils";
 import { useSession } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 function stringToColour(input: string) {
@@ -36,7 +37,8 @@ function generateColours(s: string) {
   const c3 = stringToColour(s3);
   return [c1, c2, c3];
 }
-const ProfileImage: React.FC<{ chain: string; address: string }> = ({ chain, address }) => {
+
+function ProfileImage({ chain, address }: { chain: string; address: string }) {
   const [c1, c2, c3] = generateColours(`${chain}:${address}`);
   return (
     <div
@@ -44,7 +46,7 @@ const ProfileImage: React.FC<{ chain: string; address: string }> = ({ chain, add
       className="size-9 shrink-0 rounded overflow-hidden"
     />
   );
-};
+}
 
 export default function Header() {
   const router = useRouter();
@@ -77,19 +79,6 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Center: Nav */}
-        <nav className="absolute left-1/2 -translate-x-1/2 flex gap-4 sm:gap-6">
-          <Link href="/dashboard/portfolio" className="text-sm font-medium hover:text-primary">
-            Portfolio
-          </Link>
-          <Link href="/dashboard/activity" className="text-sm font-medium hover:text-primary">
-            Activity
-          </Link>
-          <Link href="/dashboard/mint-burn" className="text-sm font-medium hover:text-primary">
-            Mint or Burn
-          </Link>
-        </nav>
-
         {/* Right: Session/Login */}
         <div className="ml-auto flex items-center">
           {session ? (
@@ -105,24 +94,34 @@ export default function Header() {
                   </span>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+
+              <DropdownMenuContent align="end" className="w-56">
                 <div className="p-2">
                   <h4 className="text-sm font-bold">
                     Hello, {session.user.username || shortenAddress(session.user.walletAddress)}!
                   </h4>
-                  <small className="text-xs">
+                  <small className="text-xs text-muted-foreground">
                     {getChainName(session.user.chainId)}:{shortenAddress(session.user.walletAddress)}
                   </small>
                 </div>
+
+                {/* Nav items with bullet-style labels */}
                 <DropdownMenuItem className="w-full cursor-pointer" asChild>
                   <Link href="/dashboard" className="flex w-full items-center">
                     <Home className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span className="">Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem className="w-full cursor-pointer" onClick={handleSignOut}>
+
+                {/* Visual separation before the destructive action */}
+                <DropdownMenuSeparator />
+
+                <DropdownMenuItem
+                  className="w-full cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
+                  onClick={handleSignOut}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>{authConfig.signOut}</span>
+                  <span>Sign Out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
