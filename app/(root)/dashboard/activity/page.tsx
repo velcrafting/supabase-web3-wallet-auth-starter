@@ -7,10 +7,11 @@ import WalletActivityButton from "./wallet-activity-client";
 export default async function DashboardActivityPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ page?: string | string[] }>;
+  searchParams?: { page?: string | string[] };
 }) {
-  const sp = await searchParams;
-  const pageStr = Array.isArray(sp?.page) ? sp.page[0] : sp?.page;
+  const pageStr = Array.isArray(searchParams?.page)
+    ? searchParams.page[0]
+    : searchParams?.page;
   const n = Number(pageStr ?? "1");
   const page = Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
 

@@ -12,6 +12,7 @@ import { useSession, AuthStatus } from "@/lib/hooks";
 import { createSiweMessage } from "viem/siwe";
 import { walletKitMetadata, authConfig, siteConfig } from "@/lib/config";
 
+// Initialize the AppKit with necessary adapters and features
 createAppKit({
   adapters: [wagmiAdapter],
   networks: siteConfig.supportedChains,
@@ -28,7 +29,6 @@ createAppKit({
   },
 });
 
-
 const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { data: session, setData: setSession, status, setStatus } = useSession();
@@ -36,11 +36,17 @@ const Web3Provider = ({ children }: { children: React.ReactNode }) => {
 
   // 1) On mount, hydrate session from cookie via /api/auth/me
   useEffect(() => {
+    const controller = new AbortController(); // Initialize the AbortController
     let cancelled = false;
+
     (async () => {
       try {
         setStatus("loading");
-        const r = await fetch("/api/auth/me", { credentials: "include", cache: "no-store" });
+        const r = await fetch("/api/auth/me", {
+          credentials: "include",
+          cache: "no-store",
+          signal: controller.signal, // Pass the controller signal to fetch
+        });
         const raw = await r.text();
         const json = JSON.parse(raw || "{}");
         if (!cancelled) {
@@ -59,8 +65,10 @@ const Web3Provider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     })();
+
     return () => {
       cancelled = true;
+      controller.abort(); // Abort the fetch request when the component unmounts
     };
   }, [setSession, setStatus]);
 
