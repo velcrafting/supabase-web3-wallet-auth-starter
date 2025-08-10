@@ -10,8 +10,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getChainName(chainId: string | number) {
-  const id = Number(chainId);
-  return siteConfig.supportedChains.find((c) => c.id === id)?.name ?? "Unknown";
+  return (
+    siteConfig.appKitChains.find(
+      (c) => c.id === chainId || c.id === Number(chainId)
+    )?.name ?? "Unknown"
+  );
 }
 
 export function shortenAddress(address: string): string {

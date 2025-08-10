@@ -7,15 +7,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { createAppKit } from "@reown/appkit/react";
 import { mainnet } from "@reown/appkit/networks";
-import { wagmiAdapter, config, projectId } from "@/lib/web3/client";
+import { wagmiAdapter, solanaAdapter, config, projectId } from "@/lib/web3/client";
 import { useSession, AuthStatus } from "@/lib/hooks";
 import { createSiweMessage } from "viem/siwe";
 import { walletKitMetadata, authConfig, siteConfig } from "@/lib/config";
 
 // Initialize the AppKit with necessary adapters and features
 createAppKit({
-  adapters: [wagmiAdapter],
-  networks: siteConfig.supportedChains,
+  adapters: [wagmiAdapter, solanaAdapter],
+  networks: siteConfig.appKitChains,
   projectId,
   metadata: walletKitMetadata,
   features: {

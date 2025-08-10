@@ -5,7 +5,7 @@ import { siteConfig } from "@/lib/config";
 
 const Footer = () => {
   return (
-    <footer className="w-full border-t h-12 flex-shrink-0">
+    <footer className="w-full border-t h-14 flex-shrink-0">
       <div className="container mx-auto h-full flex items-center justify-between px-4 lg:px-6">
         <p className="text-xs text-neutral-500 dark:text-neutral-400">
           {siteConfig.footerMessage}

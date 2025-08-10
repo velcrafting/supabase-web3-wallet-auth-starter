@@ -1,4 +1,5 @@
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { SolanaAdapter } from '@reown/appkit-adapter-solana';
 import { cookieStorage, createStorage } from 'wagmi';
 import { siteConfig } from '@/lib/config';
 
@@ -13,5 +14,7 @@ export const wagmiAdapter = new WagmiAdapter({
   storage: createStorage({ storage: cookieStorage }),
   ssr: true,
 });
+
+export const solanaAdapter = new SolanaAdapter();
 
 export const config = wagmiAdapter.wagmiConfig;

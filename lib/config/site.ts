@@ -5,8 +5,23 @@ import {
   arbitrum,
   base,
   optimism,
+  solana,
 } from "@reown/appkit/networks";
 import type { AppKitNetwork } from "@reown/appkit/networks";
+import { defineChain } from "viem";
+
+export const sei = defineChain({
+  id: 1329,
+  name: "Sei Network",
+  nativeCurrency: { name: "Sei", symbol: "SEI", decimals: 18 },
+  rpcUrls: {
+    default: { http: ["https://evm-rpc.sei-apis.com"] },
+    public: { http: ["https://evm-rpc.sei-apis.com"] },
+  },
+  blockExplorers: {
+    default: { name: "Seitrace", url: "https://seitrace.com" },
+  },
+});
 
 export const supportedChains: [AppKitNetwork, ...AppKitNetwork[]] = [
   mainnet,
@@ -15,6 +30,12 @@ export const supportedChains: [AppKitNetwork, ...AppKitNetwork[]] = [
   arbitrum,
   base,
   optimism,
+  sei,
+];
+
+export const appKitChains: [AppKitNetwork, ...AppKitNetwork[]] = [
+  ...supportedChains,
+  solana,
 ];
 
 
@@ -44,6 +65,7 @@ export const siteConfig = {
     { label: "Portfolio", href: "/portfolio" },
   ],
   supportedChains,
+  appKitChains,
   social: {
     twitter: "https://twitter.com/velcrafting",
     github: "https://github.com/velcrafting/",
