@@ -1,3 +1,23 @@
+import {
+  mainnet,
+  sepolia,
+  polygon,
+  arbitrum,
+  base,
+  optimism,
+} from "@reown/appkit/networks";
+import type { AppKitNetwork } from "@reown/appkit/networks";
+
+export const supportedChains: [AppKitNetwork, ...AppKitNetwork[]] = [
+  mainnet,
+  sepolia,
+  polygon,
+  arbitrum,
+  base,
+  optimism,
+];
+
+
 export const siteConfig = {
   name: "Web3 Sample App",
   description:
@@ -23,10 +43,12 @@ export const siteConfig = {
     { label: "Home", href: "/" },
     { label: "Portfolio", href: "/portfolio" },
   ],
-  social: {
+    social: {
     twitter: "https://twitter.com/yourhandle",
     github: "https://github.com/yourorg",
+    website: "https://yourwebsite.com",
   },
+  footerMessage: "Built with love for the decentralized web.",
   copyright: `© ${new Date().getFullYear()} Web3 Sample App. All rights reserved.`,
 };
 

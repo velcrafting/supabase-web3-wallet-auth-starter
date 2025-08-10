@@ -1,3 +1,4 @@
-import { mainnet } from 'wagmi/chains';
+import { siteConfig } from "@/lib/config";
+import type { Chain } from "viem";
 
-export const chains = [mainnet];
+export const chains = siteConfig.supportedChains as unknown as Chain[];

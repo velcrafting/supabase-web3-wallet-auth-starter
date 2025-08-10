@@ -1,11 +1,11 @@
 import { createConfig } from "wagmi";
-import { createClient, http, publicActions } from "viem";
-import { mainnet } from 'wagmi/chains';
+import { createClient, http, publicActions, type Chain } from "viem";
+import { siteConfig } from "@/lib/config";
 
 const serverConfig = createConfig({
-  chains: [mainnet],
+  chains: siteConfig.supportedChains as unknown as [Chain, ...Chain[]],
   client({ chain }) {
-    return createClient({ chain, transport: http() })
+    return createClient({ chain, transport: http() });
   },
 });
 

@@ -1,4 +1,4 @@
-// app/(dashboard)/layout.tsx  — server component
+
 import { SessionProvider } from '@/lib/auth/session-context';
 import { getSession } from '@/lib/actions/auth/getSession';
 import ClientRoot from '@/components/layout/client-root';

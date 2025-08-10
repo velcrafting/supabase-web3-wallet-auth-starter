@@ -10,14 +10,24 @@ import { mainnet } from "@reown/appkit/networks";
 import { wagmiAdapter, config, projectId } from "@/lib/web3/client";
 import { useSession, AuthStatus } from "@/lib/hooks";
 import { createSiweMessage } from "viem/siwe";
-import { walletKitMetadata, authConfig } from "@/lib/config";
+import { walletKitMetadata, authConfig, siteConfig } from "@/lib/config";
 
 createAppKit({
   adapters: [wagmiAdapter],
-  networks: [mainnet],
+  networks: siteConfig.supportedChains,
   projectId,
   metadata: walletKitMetadata,
+  features: {
+    swaps: true,
+    onramp: true,
+    email: true,
+    socials: ['google', 'x', 'discord', 'farcaster', 'github', 'apple', 'facebook'],
+    history: true,
+    analytics: true,
+    allWallets: true,
+  },
 });
+
 
 const Web3Provider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();

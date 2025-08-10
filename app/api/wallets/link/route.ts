@@ -2,10 +2,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { parseSiweMessage, SiweMessage } from "viem/siwe";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, type Chain } from "viem";
 import { verifyMessage } from "viem/actions";
-import { mainnet } from "viem/chains";
 import { createClient } from "@supabase/supabase-js";
+import { siteConfig } from "@/lib/config";
 import { SignJWT } from "jose";
 import { randomUUID } from "crypto";
 import { makeDegenUsername } from "@/lib/actions/username";
@@ -50,6 +50,10 @@ export async function POST(req: Request) {
 
     // 3) Parse SIWE
     const siwe = parseSiweMessage(message) as SiweMessage;
+    const chainId = Number(siwe.chainId);
+    if (!Number.isFinite(chainId)) {
+      return NextResponse.json({ error: "Invalid chainId" }, { status: 400 });
+    }
 
     // 4) Check nonce
     if (!cookieNonce || !siwe?.nonce || cookieNonce !== siwe.nonce) {
@@ -57,6 +61,10 @@ export async function POST(req: Request) {
     }
 
     // 5) Verify signature
+    const chain =
+    (siteConfig.supportedChains.find((c) => c.id === chainId) as Chain | undefined) ??
+    (siteConfig.supportedChains[0] as unknown as Chain);
+    const publicClient = createPublicClient({ chain, transport: http() });
     const ok = await verifyMessage(publicClient, {
       address: siwe.address as `0x${string}`,
       message,
@@ -109,6 +117,7 @@ export async function POST(req: Request) {
       });
 
       let userId: string | null = created?.user?.id ?? null;
+      let userEmail: string | null = created?.user?.email ?? email;
 
       if (createErr) {
         // If email already exists, fetch user id by email from auth schema
@@ -122,7 +131,7 @@ export async function POST(req: Request) {
           const { data: existingUser, error: lookupErr } = await admin
             .schema("auth")
             .from("users")
-            .select("id")
+            .select("id, email")
             .eq("email", email)
             .single();
 
@@ -131,6 +140,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Failed to find existing user" }, { status: 500 });
           }
           userId = existingUser.id;
+          userEmail = existingUser.email ?? email;
         } else {
           console.error("[link] admin.createUser failed:", createErr);
           return NextResponse.json(
@@ -152,6 +162,7 @@ export async function POST(req: Request) {
             {
               id: userId,
               username,
+              email: userEmail,
               wallet_address: walletAddress,
               chain_id: chainId,
               created_at: new Date().toISOString(),
@@ -160,7 +171,7 @@ export async function POST(req: Request) {
           );
 
         if (profileErr) {
-          console.error("[link] profiles upsert error:", profileErr);
+          console.error(`[link] profiles upsert error for user ${userId}:`, profileErr);
           return NextResponse.json({ error: "Failed to upsert profile" }, { status: 500 });
         }
       }

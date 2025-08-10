@@ -3,6 +3,7 @@ import { decodeJwt } from "jose";
 import { twMerge } from "tailwind-merge";
 import { mainnet, sepolia } from "viem/chains";
 import type { SupabaseToken } from "@/lib/supabase";
+import { siteConfig } from "@/lib/config";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -10,14 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getChainName(chainId: string | number) {
   const id = Number(chainId);
-  switch (id) {
-    case mainnet.id:
-      return "Ethereum";
-    case sepolia.id:
-      return "Sepolia";
-    default:
-      return "Unknown";
-  }
+  return siteConfig.supportedChains.find((c) => c.id === id)?.name ?? "Unknown";
 }
 
 export function shortenAddress(address: string): string {

@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { GlobeIcon, Home, LogOut } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDisconnect } from "wagmi";
@@ -11,6 +12,7 @@ import { siteConfig, authConfig } from "@/lib/config";
 import { getChainName, shortenAddress } from "@/lib/utils";
 import { useSession } from "@/lib/hooks";
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/ui/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,13 +76,18 @@ export default function Header() {
         {/* Left: Logo */}
         <div className="flex items-center">
           <Link className="flex items-center justify-center" href="/">
-            <GlobeIcon className="h-6 w-6" />
+            <Image
+              src={siteConfig.theme.logo}
+              alt={siteConfig.name}
+              width={24}
+              height={24}
+            />
             <span className="sr-only">{siteConfig.name}</span>
           </Link>
         </div>
 
         {/* Right: Session/Login */}
-        <div className="ml-auto flex items-center">
+        <div className="ml-auto flex items-center gap-2">
           {session ? (
             <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <DropdownMenuTrigger asChild>
@@ -140,6 +147,7 @@ export default function Header() {
               )}
             </ConnectButton.Custom>
           )}
+          <ThemeToggle />
         </div>
       </div>
     </header>

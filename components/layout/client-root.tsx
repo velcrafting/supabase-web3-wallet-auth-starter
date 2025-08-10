@@ -62,6 +62,7 @@ function ThemedLayout({ children }: { children: React.ReactNode }) {
     const root = document.documentElement;
     root.style.setProperty("--brand-primary", hexToHsl(colors.primary));
     root.style.setProperty("--brand-accent", hexToHsl(colors.accent));
+    root.style.setProperty("--brand-font", siteConfig.theme.fontFamily);
   }, [colors]);
   return (
     <div className="min-h-[100dvh] flex flex-col">

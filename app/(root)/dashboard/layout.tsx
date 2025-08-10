@@ -1,3 +1,6 @@
++4
+-0
+
 "use client";
 
 import Link from "next/link";
@@ -9,6 +12,8 @@ import {
   CoinsIcon,
   PieChart,
   Activity as ActivityIcon,
+  DollarSignIcon,
+  ArrowLeftRightIcon,
 } from "lucide-react";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,6 +25,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { href: "/dashboard", label: "General", icon: LayoutDashboardIcon },
     { href: "/dashboard/portfolio", label: "Portfolio", icon: PieChart },
+    { href: "/dashboard/onramp", label: "On-Ramp", icon: DollarSignIcon },
+    { href: "/dashboard/swap", label: "Swap", icon: ArrowLeftRightIcon },
     { href: "/dashboard/activity", label: "Activity", icon: ActivityIcon },
     { href: "/dashboard/wallets", label: "Wallets", icon: WalletIcon },
     { href: "/dashboard/mint-burn", label: "Mint/Burn", icon: CoinsIcon },

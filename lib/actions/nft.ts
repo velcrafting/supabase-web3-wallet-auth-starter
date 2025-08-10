@@ -2,10 +2,9 @@
 
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { createWalletClient, http } from "viem";
+import { createWalletClient, http, type Chain } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { mainnet, sepolia } from "viem/chains";
-
+import { siteConfig } from "@/lib/config";
 import { protectedProcedure } from "@/lib/actions/core";
 import { nfts } from "@/lib/db/schema";
 
@@ -32,13 +31,11 @@ const nftAbi = [
 const privateKey = process.env.WALLET_PRIVATE_KEY as `0x${string}`;
 const nftAddress = process.env.NFT_CONTRACT_ADDRESS as `0x${string}`;
 
-function getChain(chainId: number) {
-  switch (chainId) {
-    case sepolia.id:
-      return sepolia;
-    default:
-      return mainnet;
-  }
+function getChain(chainId: number): Chain {
+  return (
+    (siteConfig.supportedChains.find((c) => c.id === chainId) as Chain | undefined) ??
+    (siteConfig.supportedChains[0] as unknown as Chain)
+  );
 }
 
 export const mintNft = protectedProcedure

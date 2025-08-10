@@ -1,11 +1,11 @@
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { cookieStorage, createStorage } from 'wagmi';
-import { mainnet } from '@reown/appkit/networks';
+import { siteConfig } from '@/lib/config';
 
 export const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!;
 if (!projectId) throw new Error('Missing WalletConnect Project ID');
 
-const networks = [mainnet];
+const networks = siteConfig.supportedChains;
 
 export const wagmiAdapter = new WagmiAdapter({
   projectId,
