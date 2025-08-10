@@ -11,10 +11,10 @@ export async function middleware(req: NextRequest) {
 
   try {
     await jwtVerify(token, new TextEncoder().encode(AUTH_SECRET));
-    return NextResponse.next();
+    return NextResponse.next(); // Proceed to the requested page
   } catch {
     const res = redirectToLogin(req);
-    res.cookies.delete(SESSION_COOKIE_NAME);
+    res.cookies.delete(SESSION_COOKIE_NAME); // Remove invalid session cookie
     return res;
   }
 }
@@ -22,10 +22,10 @@ export async function middleware(req: NextRequest) {
 function redirectToLogin(req: NextRequest) {
   const url = req.nextUrl.clone();
   url.pathname = "/login";
-  url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
+  url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search); // Store original URL to redirect after login
   return NextResponse.redirect(url);
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/login"], // Exclude login from middleware
 };

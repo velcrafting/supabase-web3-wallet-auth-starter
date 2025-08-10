@@ -1,9 +1,9 @@
 import WalletsClient from './wallets-client';
+import { getSession } from '@/lib/actions/auth/getSession';
 import { getWallets } from '@/lib/actions/wallet';
-import { useSession } from '@/lib/hooks';
 
 const DashboardWalletsPage = async () => {
-  const { data: session } = useSession(); // Get session
+  const session = await getSession();
 
   if (!session) {
     return (
@@ -14,9 +14,8 @@ const DashboardWalletsPage = async () => {
     );
   }
 
-  // Fetch wallets from the server-side
   const { data: wallets } = await getWallets();
-  
+
   return (
     <>
       <h1 className="text-2xl font-bold">Wallets</h1>
