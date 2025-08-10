@@ -24,11 +24,6 @@ const SUPABASE_URL = reqEnv("NEXT_PUBLIC_SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = reqEnv("SUPABASE_SERVICE_ROLE_KEY");
 const isProd = process.env.NODE_ENV === "production";
 
-const publicClient = createPublicClient({
-  chain: mainnet,
-  transport: http(),
-});
-
 export async function POST(req: Request) {
   const t0 = Date.now();
   try {
@@ -76,10 +71,6 @@ export async function POST(req: Request) {
 
     // 6) Normalize
     const walletAddress = siwe.address.toLowerCase();
-    const chainId = Number(siwe.chainId);
-    if (!Number.isFinite(chainId)) {
-      return NextResponse.json({ error: "Invalid chainId" }, { status: 400 });
-    }
 
     // 7) Supabase admin client
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {

@@ -19,7 +19,7 @@ export const supportedChains: [AppKitNetwork, ...AppKitNetwork[]] = [
 
 
 export const siteConfig = {
-  name: "Web3 Sample App",
+  name: "Supabase x ReOwn Boilerplate",
   description:
     "Experience decentralized applications. Connect your wallet and explore the future of the web.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
@@ -43,12 +43,13 @@ export const siteConfig = {
     { label: "Home", href: "/" },
     { label: "Portfolio", href: "/portfolio" },
   ],
-    social: {
-    twitter: "https://twitter.com/yourhandle",
-    github: "https://github.com/yourorg",
-    website: "https://yourwebsite.com",
+  supportedChains,
+  social: {
+    twitter: "https://twitter.com/velcrafting",
+    github: "https://github.com/velcrafting/",
+    website: "https://www.velcrafting.com/",
   },
-  footerMessage: "Built with love for the decentralized web.",
+  footerMessage: "Built with love for the decentralized web, by Vel.",
   copyright: `© ${new Date().getFullYear()} Web3 Sample App. All rights reserved.`,
 };
 
