@@ -3,21 +3,39 @@ import type { ActivityLog } from "@/lib/db/schema";
 import { getActivityLogsSSR } from "@/lib/actions/activity";
 import { formatAction } from "@/lib/activity";
 import WalletActivityButton from "./wallet-activity-client";
+import { useSession } from "@/lib/hooks";
+
+interface SearchParams {
+  page?: string | string[];
+}
 
 export default async function DashboardActivityPage({
   searchParams,
 }: {
-  searchParams?: { page?: string | string[] };
+  searchParams: Promise<SearchParams>;
 }) {
-  const pageStr = Array.isArray(searchParams?.page)
-    ? searchParams.page[0]
-    : searchParams?.page;
+  // Access session on the client-side
+  const { data: session } = useSession();
+
+  // If no session, prompt user to sign in
+  if (!session) {
+    return (
+      <>
+        <h1 className="text-2xl font-bold">Activity</h1>
+        <p className="text-sm text-muted-foreground">Please sign in to view your activity.</p>
+      </>
+    );
+  }
+
+  // Fetch page parameter for pagination
+  const { page: pageParam } = await searchParams;
+  const pageStr = Array.isArray(pageParam) ? pageParam[0] : pageParam;
   const n = Number(pageStr ?? "1");
   const page = Number.isFinite(n) && n > 0 ? Math.floor(n) : 1;
 
   // Fetch activity logs from server-side
   const logs = await getActivityLogsSSR({ page, limit: 10 });
-  
+
   // Display a message if there are no logs
   if (!logs || logs.length === 0) {
     return (

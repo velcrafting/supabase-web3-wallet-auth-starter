@@ -1,4 +1,5 @@
 // lib/hooks/index.ts
+'use client';
 import { useActionState, useContext } from 'react';
 import { SessionContext } from '@/lib/auth/session-context';
 

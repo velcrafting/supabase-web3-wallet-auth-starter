@@ -2,7 +2,6 @@
 
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useRouter } from 'next/navigation';
-
 import { Button } from '@/components/ui/button';
 import { getChainName, shortenAddress } from '@/lib/utils';
 
@@ -15,9 +14,14 @@ interface Wallet {
 const WalletsClient = ({ wallets }: { wallets: Wallet[] }) => {
   const router = useRouter();
 
+  // Handle wallet removal
   const onRemove = async (id: string) => {
-    await fetch(`/api/wallets/${id}`, { method: 'DELETE' });
-    router.refresh();
+    const response = await fetch(`/api/wallets/${id}`, { method: 'DELETE' });
+    if (response.ok) {
+      router.refresh(); // Refresh the page to show updated list
+    } else {
+      console.error('Failed to remove wallet');
+    }
   };
 
   return (
@@ -29,18 +33,11 @@ const WalletsClient = ({ wallets }: { wallets: Wallet[] }) => {
       <ul className="space-y-2">
         {wallets.length > 0 ? (
           wallets.map((w) => (
-            <li
-              key={w.id}
-              className="text-sm flex items-center justify-between gap-2"
-            >
+            <li key={w.id} className="text-sm flex items-center justify-between gap-2">
               <span>
                 {getChainName(w.chainId)}: {shortenAddress(w.walletAddress)}
               </span>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => onRemove(w.id)}
-              >
+              <Button variant="destructive" size="sm" onClick={() => onRemove(w.id)}>
                 Remove wallet
               </Button>
             </li>
