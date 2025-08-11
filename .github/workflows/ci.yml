@@ -9,22 +9,23 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Install pnpm first so setup-node's pnpm cache can call it
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false  # we'll run install separately
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -42,7 +43,4 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'service_role' }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'devsecretdevsecretdevsecretdevsecret' }}
           NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'demo' }}
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-          ADMIN_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-          DIRECT_URL: postgres://postgres:postgres@localhost:5432/postgres
-        run: pnpm build
+          DATABASE_URL: postgres://post_
