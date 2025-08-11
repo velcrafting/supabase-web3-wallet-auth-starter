@@ -20,12 +20,13 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-      - name: Setup pnpm
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 9
+          run_install: false  # we'll run install separately
 
-      - name: Install deps
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Type check
