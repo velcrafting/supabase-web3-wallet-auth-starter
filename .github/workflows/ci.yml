@@ -13,19 +13,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install pnpm first so setup-node can cache it
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: false
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
+
+      - name: Enable Corepack (use package.json packageManager)
+        run: corepack enable
+
+      - name: Show tool versions
+        run: |
+          node -v
+          pnpm -v
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
