@@ -4,7 +4,7 @@ import {
   getActivityLogsSSR,
   getActivityByWalletsSSR,
 } from "@/lib/actions/activity";
-
+import { formatWalletAddress } from "./activity-utils";
 export default async function PortfolioActivity({
   wallets,
   page,
@@ -26,8 +26,8 @@ export default async function PortfolioActivity({
           <li key={row.id} className="py-2 flex items-center justify-between">
             <span>
               {row.action ?? "action"}
-              {row.metadata?.wallet && (
-                <> • <code className="text-xs">{String(row.metadata.wallet).slice(0,6)}…{String(row.metadata.wallet).slice(-4)}</code></>
+              {formatWalletAddress(row.metadata) && (
+                <> • <code className="text-xs">{formatWalletAddress(row.metadata)}</code></>
               )}
             </span>
             <span className="text-muted-foreground">

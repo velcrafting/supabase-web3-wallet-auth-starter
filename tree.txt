@@ -1,0 +1,87 @@
+.
+├── .env.example                – Sample environment variables
+├── .gitignore                  – Git ignored files
+├── .nvmrc                      – Node version pin
+├── LICENSE                     – Project license
+├── README.md                   – Project documentation
+├── components.json             – shadcn/ui component config
+├── drizzle.config.ts           – Drizzle ORM setup
+├── middleware.ts               – Auth middleware for protected routes
+├── next.config.ts              – Next.js configuration
+├── package.json                – Package metadata
+├── pnpm-lock.yaml              – Dependency lockfile
+├── pnpm-lock 2.yaml            – Legacy/alt lockfile
+├── postcss.config.mjs          – PostCSS configuration
+├── tailwind.config.ts          – Tailwind configuration
+├── tsconfig.json               – Typescript configuration
+├── app/
+│   ├── globals.css             – Global styles
+│   ├── layout.tsx              – Root layout
+│   ├── favicon.ico             – Favicon
+│   ├── fonts/Geist*.woff       – Font files
+│   ├── (root)/
+│   │   ├── layout.tsx          – Layout for root segment
+│   │   ├── page.tsx            – Landing page
+│   │   └── dashboard/
+│   │       ├── layout.tsx      – Dashboard layout
+│   │       ├── (general)/page.tsx – Example dashboard page
+│   │       ├── activity/
+│   │       │   ├── page.tsx    – Activity list page
+│   │       │   └── wallet-activity-client.tsx – Wallet activity button
+│   │       ├── mint-burn/page.tsx – NFT mint/burn placeholder
+│   │       ├── onramp/page.tsx – Fiat on-ramp view
+│   │       ├── portfolio/page.tsx – Portfolio overview
+│   │       ├── security/page.tsx – Security settings
+│   │       ├── swap/page.tsx   – Token swap view
+│   │       └── wallets/
+│   │           ├── page.tsx    – Wallet management page
+│   │           └── wallets-client.tsx – Client wallet list
+│   └── api/
+│       ├── _diag_create_user/route.ts – Diagnostic user creation
+│       ├── auth/
+│       │   ├── me/route.ts     – Current user info
+│       │   ├── nonce/route.ts  – SIWE nonce
+│       │   └── signout/route.ts – Sign-out endpoint
+│       └── wallets/
+│           ├── [id]/route.ts   – Delete wallet API
+│           └── link/route.ts   – Link wallet via SIWE
+├── components/
+│   ├── layout/{client-root,footer,header}.tsx – Layout building blocks
+│   ├── portfolio/
+│   │   ├── context.tsx         – Portfolio context
+│   │   ├── index.ts            – Portfolio exports
+│   │   ├── portfolio-activity.tsx – Recent activity list
+│   │   ├── portfolio-aggregate.tsx – Aggregated balances
+│   │   ├── types.ts            – Widget types
+│   │   ├── use-portfolio-params.ts – Search param normalizer
+│   │   ├── widget-registry.ts  – Widget registry
+│   │   └── widgets/{Activity,Chains,Emptystate,Holdings,NetWorth}.tsx – Widgets
+│   ├── service-worker.tsx      – Service worker registration
+│   ├── ui/{button,dialog,dropdown-menu,input,label,scroll-area,theme-toggle}.tsx – UI primitives
+│   └── web3/{wallet-filters,wallet-picker,web3-provider}.tsx – Web3 utilities
+├── lib/
+│   ├── actions/
+│   │   ├── activity.ts         – Activity logging
+│   │   ├── auth/{getSession,index,logout,register,session,verify}.ts – Auth actions
+│   │   ├── core.ts             – Procedure helpers
+│   │   ├── nft.ts              – NFT actions
+│   │   ├── user.ts             – User actions
+│   │   ├── username.ts         – Username helper
+│   │   └── wallet.ts           – Wallet actions
+│   ├── activity/index.ts       – Activity formatting
+│   ├── auth/{index,session-context,update-session}.tsx – Auth context/hooks
+│   ├── config/{index,site}.ts  – Site configuration
+│   ├── constants/index.ts      – Constants
+│   ├── db/
+│   │   ├── index.ts            – Drizzle client
+│   │   ├── migrate.ts          – Migration runner
+│   │   ├── schema.ts           – DB schema
+│   │   └── migrations/{…}      – SQL migrations
+│   ├── hooks/index.ts          – Shared hooks
+│   ├── server/cookies.ts       – Cookie helpers
+│   ├── supabase.ts             – Supabase client helpers
+│   ├── utils/index.ts          – Utility functions
+│   └── web3/{client,index,server}.ts – Web3 helpers
+├── public/icon.png             – App icon
+├── public/logo.svg             – Logo
+└── public/serviceworker.js     – Service worker script
