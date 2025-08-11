@@ -1,0 +1,8 @@
+## **3 CODEOWNERS**
+- **Purpose**: Assigns default reviewers for changes in specific files or folders.
+- **Value**: Ensures important changes get reviewed by the right people before merging.
+
+Example `.github/CODEOWNERS`: 
+
+## Default Reviewers for all files
+- @velcrafting
