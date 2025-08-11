@@ -20,10 +20,12 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Enable Corepack (use package.json packageManager)
-        run: corepack enable
+      - name: Enable and prepare Corepack (installs pnpm from package.json)
+        run: |
+          corepack enable
+          corepack prepare pnpm@$(jq -r '.packageManager' package.json | cut -d@ -f2) --activate
 
-      - name: Show tool versions
+      - name: Show versions
         run: |
           node -v
           pnpm -v
