@@ -27,5 +27,5 @@ function redirectToLogin(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"], // Exclude login from middleware
+  matcher: ["/dashboard/:path*"],
 };
