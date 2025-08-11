@@ -2,9 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth/session-context";
+import type { useAppKit } from "@reown/appkit/react";
+
+type OpenFn = ReturnType<typeof useAppKit>["open"];
 
 interface WalletActivityButtonProps {
-  open: (options: { view: string }) => void;
+  open: OpenFn;
   session: Session | null | undefined;
 }
 

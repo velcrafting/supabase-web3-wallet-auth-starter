@@ -8,10 +8,13 @@ import { formatAction } from "@/lib/activity";
 import WalletActivityButton from "./wallet-activity-client";
 import type { Session } from "@/lib/auth/session-context";
 import { ActivityLog } from "@/lib/db/schema";
+import type { useAppKit } from "@reown/appkit/react";
+
+type OpenFn = ReturnType<typeof useAppKit>["open"];
 
 interface HistoryTabProps {
   session: Session | null | undefined;
-  open: (options: { view: string }) => void;
+  open: OpenFn;
 }
 
 const HistoryTab: React.FC<HistoryTabProps> = ({ session, open }) => {

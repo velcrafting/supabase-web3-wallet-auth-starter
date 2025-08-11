@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboardIcon,
   ShieldIcon,
@@ -18,13 +18,29 @@ import { cn } from "@/lib/utils";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
-
+  const searchParams = useSearchParams();
+  
   const navItems = [
     { href: "/dashboard", label: "General", icon: LayoutDashboardIcon },
     { href: "/dashboard/portfolio", label: "Portfolio", icon: PieChart },
-    { href: "/dashboard/onramp", label: "On-Ramp", icon: DollarSignIcon },
-    { href: "/dashboard/swap", label: "Swap", icon: ArrowLeftRightIcon },
-    { href: "/dashboard/activity", label: "Activity", icon: ActivityIcon },
+{
+      href: "/dashboard/transactions?tab=onramp",
+      label: "On-Ramp",
+      icon: DollarSignIcon,
+      tab: "onramp",
+    },
+    {
+      href: "/dashboard/transactions?tab=swap",
+      label: "Swap",
+      icon: ArrowLeftRightIcon,
+      tab: "swap",
+    },
+    {
+      href: "/dashboard/transactions?tab=history",
+      label: "Activity",
+      icon: ActivityIcon,
+      tab: "history",
+    },
     { href: "/dashboard/wallets", label: "Wallets", icon: WalletIcon },
     { href: "/dashboard/mint-burn", label: "Mint/Burn", icon: CoinsIcon },
     { href: "/dashboard/security", label: "Security", icon: ShieldIcon },
@@ -37,8 +53,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Dashboard</h2>
             <nav className="space-y-2">
-              {navItems.map(({ href, label, icon: Icon }) => {
-                const isActive = pathname === href;
+              {navItems.map(({ href, label, icon: Icon, tab }) => {
+                const isActive = tab
+                  ? pathname === "/dashboard/transactions" &&
+                    searchParams.get("tab") === tab
+                  : pathname === href;
                 return (
                   <Link
                     key={href}

@@ -2,10 +2,13 @@
 
 import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth/session-context";
+import type { useAppKit } from "@reown/appkit/react";
+
+type OpenFn = ReturnType<typeof useAppKit>["open"];
 
 interface OnrampTabProps {
   session: Session | null | undefined;
-  open: (options: { view: string }) => void;
+  open: OpenFn;
 }
 
 const OnrampTab: React.FC<OnrampTabProps> = ({ session, open }) => {

@@ -25,14 +25,15 @@
 │   │   └── dashboard/
 │   │       ├── layout.tsx      – Dashboard layout
 │   │       ├── (general)/page.tsx – Example dashboard page
-│   │       ├── activity/
-│   │       │   ├── page.tsx    – Activity list page
+│   │       ├── transactions/
+│   │       │   ├── page.tsx            – Transactions dashboard
+│   │       │   ├── onramp.tsx          – On-ramp tab
+│   │       │   ├── swap.tsx            – Swap tab
+│   │       │   ├── history.tsx         – Activity/history tab
 │   │       │   └── wallet-activity-client.tsx – Wallet activity button
 │   │       ├── mint-burn/page.tsx – NFT mint/burn placeholder
-│   │       ├── onramp/page.tsx – Fiat on-ramp view
 │   │       ├── portfolio/page.tsx – Portfolio overview
 │   │       ├── security/page.tsx – Security settings
-│   │       ├── swap/page.tsx   – Token swap view
 │   │       └── wallets/
 │   │           ├── page.tsx    – Wallet management page
 │   │           └── wallets-client.tsx – Client wallet list
@@ -45,20 +46,6 @@
 │       └── wallets/
 │           ├── [id]/route.ts   – Delete wallet API
 │           └── link/route.ts   – Link wallet via SIWE
-├── components/
-│   ├── layout/{client-root,footer,header}.tsx – Layout building blocks
-│   ├── portfolio/
-│   │   ├── context.tsx         – Portfolio context
-│   │   ├── index.ts            – Portfolio exports
-│   │   ├── portfolio-activity.tsx – Recent activity list
-│   │   ├── portfolio-aggregate.tsx – Aggregated balances
-│   │   ├── types.ts            – Widget types
-│   │   ├── use-portfolio-params.ts – Search param normalizer
-│   │   ├── widget-registry.ts  – Widget registry
-│   │   └── widgets/{Activity,Chains,Emptystate,Holdings,NetWorth}.tsx – Widgets
-│   ├── service-worker.tsx      – Service worker registration
-│   ├── ui/{button,dialog,dropdown-menu,input,label,scroll-area,theme-toggle}.tsx – UI primitives
-│   └── web3/{wallet-filters,wallet-picker,web3-provider}.tsx – Web3 utilities
 ├── lib/
 │   ├── actions/
 │   │   ├── activity.ts         – Activity logging
