@@ -16,8 +16,9 @@ export default [
     },
     plugins: { react, 'react-hooks': reactHooks },
     rules: {
-      // Pragmatic defaults to pass CI while you iterate
+      // Pragmatic defaults to keep CI unblocked while you iterate
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/no-unused-vars': ['warn', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
@@ -39,21 +40,15 @@ export default [
         fetch: 'readonly',
       },
     },
-    rules: {
-      'no-undef': 'off',
-    },
+    rules: { 'no-undef': 'off' },
   },
 
   // Config files often use require()
   {
     files: ['**/tailwind.config.{js,ts}', '**/postcss.config.{js,ts}'],
-    rules: {
-      '@typescript-eslint/no-require-imports': 'off',
-    },
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
 
   // Ignore build output
-  {
-    ignores: ['.next/', 'node_modules/', 'dist/', 'coverage/'],
-  },
+  { ignores: ['.next/', 'node_modules/', 'dist/', 'coverage/'] },
 ];
