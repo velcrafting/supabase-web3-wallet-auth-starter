@@ -16,17 +16,17 @@ const TransactionsPage = () => {
 
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initial = (searchParams.get("tab") as Tab) || "onramp";
-  const [activeTab, setActiveTab] = useState<Tab>(initial);
+  const initialTab = (searchParams.get("tab") as Tab) || "onramp";
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   useEffect(() => {
-    const t = (searchParams.get("tab") as Tab) || "onramp";
-    setActiveTab(t);
+    const tab = (searchParams.get("tab") as Tab) || "onramp";
+    setActiveTab(tab);
   }, [searchParams]);
 
   const changeTab = (tab: Tab) => {
     setActiveTab(tab);
-    router.replace(`?tab=${tab}`);
+    router.replace(`/dashboard/transactions?tab=${tab}`);
   };
 
   return (

@@ -22,11 +22,14 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ session, open }) => {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancelled, setCancelled] = useState<boolean>(false);
 
   useEffect(() => {
     if (!session) return;
 
     const fetchLogs = async () => {
+      if (cancelled) return;  // If cancelled, don't run the request
+
       try {
         const pageParam = searchParams?.get("page");
         const pageStr = pageParam ? pageParam : "1";
@@ -41,14 +44,21 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ session, open }) => {
           setLogs(fetchedLogs);
         }
       } catch (err) {
-        setError("Failed to load activity.");
+        if (!cancelled) {
+          setError("Failed to load activity.");
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     };
 
     fetchLogs();
-  }, [session, searchParams]);
+
+    // Cleanup effect if tab is changed before data is loaded
+    return () => setCancelled(true);
+  }, [session, searchParams, cancelled]); // Added cancelled state to handle cleanup
 
   if (!session) {
     return (

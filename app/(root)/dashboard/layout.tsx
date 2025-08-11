@@ -15,6 +15,7 @@ import {
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
@@ -23,7 +24,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { href: "/dashboard", label: "General", icon: LayoutDashboardIcon },
     { href: "/dashboard/portfolio", label: "Portfolio", icon: PieChart },
-{
+    {
       href: "/dashboard/transactions?tab=onramp",
       label: "On-Ramp",
       icon: DollarSignIcon,
@@ -46,6 +47,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     { href: "/dashboard/security", label: "Security", icon: ShieldIcon },
   ];
 
+  useEffect(() => {
+    // Handle any side effects based on pathname or searchParams here, if needed
+  }, [pathname, searchParams]);
+
   return (
     <div className="container mx-auto flex sm:flex-row flex-col px-4 lg:px-6 flex-1">
       <aside className="w-full sm:w-48 mt-4">
@@ -55,8 +60,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
             <nav className="space-y-2">
               {navItems.map(({ href, label, icon: Icon, tab }) => {
                 const isActive = tab
-                  ? pathname === "/dashboard/transactions" &&
-                    searchParams.get("tab") === tab
+                  ? pathname === "/dashboard/transactions" && searchParams.get("tab") === tab
                   : pathname === href;
                 return (
                   <Link
