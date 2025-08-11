@@ -34,7 +34,9 @@ jobs:
         run: pnpm typecheck || pnpm tsc --noEmit
 
       - name: Lint
-        run: pnpm lint || pnpm eslint .
+        env:
+          NEXT_DISABLE_ESLINT_PROMPT: '1'
+        run: pnpm lint
 
       - name: Build
         env:
