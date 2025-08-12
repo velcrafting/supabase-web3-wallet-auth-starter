@@ -23,7 +23,7 @@
     "@rainbow-me/rainbowkit": "^2.2.8",
     "@reown/appkit": "^1.7.18",
     "@reown/appkit-adapter-bitcoin": "^1.7.18",
-    "@reown/appkit-adapter-solana": "^1.7.18",
+    "@reown/appkit-adapter-solana": "^1.7.19",
     "@reown/appkit-adapter-wagmi": "^1.7.18",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.54.0",
